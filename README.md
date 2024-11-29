@@ -1,4 +1,9 @@
+[![pypi](https://img.shields.io/pypi/v/epyt-control.svg)](https://pypi.org/project/epyt-control/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/epyt-control)
+[![Documentation Status](https://readthedocs.org/projects/epyt-control/badge/?version=stable)](https://epyt-control.readthedocs.io/en/stable/?badge=stable)
+[![Downloads](https://static.pepy.tech/badge/epyt-control)](https://pepy.tech/project/epyt-control)
+[![Downloads](https://static.pepy.tech/badge/epyt-control/month)](https://pepy.tech/project/epyt-control)
 
 # EPyT-Control -- EPANET Python Toolkit - Control
 
