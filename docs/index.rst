@@ -19,6 +19,7 @@ therefore it provides full compatibility with the
     :caption: User Guide
 
     installation
+    tut.basic_usage
 
 
 API Reference
