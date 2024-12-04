@@ -20,6 +20,7 @@ therefore it provides full compatibility with the
 
     installation
     tut.basic_usage
+    tut.create_env
 
 
 API Reference
