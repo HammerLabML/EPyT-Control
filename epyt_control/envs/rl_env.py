@@ -4,6 +4,7 @@ This module contains a base class for reinforcement learning (RL) environments.
 from abc import abstractmethod
 import os
 import uuid
+from copy import deepcopy
 import numpy as np
 from epyt_flow.simulation import ScadaData, ScenarioConfig, ScenarioSimulator
 from epyt_flow.gym import ScenarioControlEnv
@@ -156,7 +157,7 @@ class RlEnv(ScenarioControlEnv, Env):
         if return_as_observations is True:
             r = self._get_observation(r)
 
-        return r, {}
+        return r, {"scada_data": scada_data}
 
     def _get_observation(self, scada_data: ScadaData) -> np.ndarray:
         if scada_data is not None:
@@ -194,7 +195,8 @@ class RlEnv(ScenarioControlEnv, Env):
         Returns
         -------
         `tuple[np.ndarray, float, bool, bool, dict]`
-            Observation, reward, terminated, False (truncated), {} (no additional info).
+            Observation, reward, terminated, False (truncated), {scada_data: ScadaData}
+            (`epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_ as additional info).
         """
         # Apply actions
         for action_value, action_space in zip(action, self._action_spaces):
@@ -202,18 +204,18 @@ class RlEnv(ScenarioControlEnv, Env):
 
         # Run one simulation step and observe the sensor readings (SCADA data)
         if self.autoreset is False:
-            curent_scada_data, terminated = self._next_sim_itr()
+            current_scada_data, terminated = self._next_sim_itr()
         else:
             terminated = None
-            curent_scada_data = self._next_sim_itr()
+            current_scada_data = self._next_sim_itr()
 
-        if isinstance(curent_scada_data, tuple):
-            curent_scada_data, _ = curent_scada_data
+        if isinstance(current_scada_data, tuple):
+            current_scada_data, _ = current_scada_data
 
-        obs = self._get_observation(curent_scada_data)
+        obs = self._get_observation(current_scada_data)
 
         # Calculate reward
-        current_reward = self._compute_reward_function(curent_scada_data)
+        current_reward = self._compute_reward_function(deepcopy(current_scada_data))
 
         # Return observation and reward
-        return obs, current_reward, terminated, False, {}
+        return obs, current_reward, terminated, False, {"scada_data": current_scada_data}

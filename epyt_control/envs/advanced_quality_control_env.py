@@ -90,4 +90,4 @@ class AdvancedQualityControlEnv(RlEnv):
         if return_as_observations is True:
             r = self._get_observation(r)
 
-        return r, {}
+        return r, {"scada_data": scada_data}
