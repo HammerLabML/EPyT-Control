@@ -44,7 +44,7 @@ pip install .
 
 ## Documentation
 
-Documentation is available on readthedocs: [https://epyt-control.readthedocs.io/en/latest/](https://epyt-control.readthedocs.io/en/stable)
+Documentation is available on readthedocs: [https://epyt-control.readthedocs.io/en/stable/](https://epyt-control.readthedocs.io/en/stable)
 
 ## License
 
