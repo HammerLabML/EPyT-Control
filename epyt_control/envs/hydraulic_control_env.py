@@ -22,19 +22,19 @@ class HydraulicControlEnv(RlEnv):
     ----------
     scenario_config : `epyt_flow.simulation.ScenarioConfig <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.html#epyt_flow.simulation.scenario_config.ScenarioConfig>`_
         Configuration of the scenario.
-    pumps_speed_action_space : `list[PumpSpeedActionSpace]`, optional
+    pumps_speed_action_space : list[:class:`~epyt_control.actions.pump_speed_action_space.PumpSpeedActionSpace`], optional
         List of pumps where the speed has to be controlled.
 
         The default is None.
-    pumps_state_action_space : `list[PumpStateActionSpace]`, optional
+    pumps_state_action_space : list[:class:`~epyt_control.actions.actuator_state_space.PumpStateActionSpace`], optional
         Lisst of pumps where the state has to be controlled.
 
         The default is None.
-    valves_state_action_space : `list[ValveStateActionSpace]`, optional
+    valves_state_action_space : list[:class:`~epyt_control.actions.actuator_state_space.ValveStateActionSpace`], optional
         List of valves that has to be controlled.
 
         The default is None.
-    chemical_injection_action_space : `list[ChemicalInjectionActionSpace]`, optional
+    chemical_injection_action_space : list[:class:`~epyt_control.actions.quality_action_space.ChemicalInjectionActionSpace`], optional
         List chemical injection actions -- i.e. places in the network where the
         injection of the chemical has to be controlled.
 

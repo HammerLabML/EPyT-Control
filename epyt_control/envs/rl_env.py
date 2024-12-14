@@ -93,7 +93,7 @@ class RlEnv(ScenarioControlEnv, Env):
         Returns
         -------
         `gymnasium.spaces.Space <https://gymnasium.farama.org/api/spaces/#gymnasium.spaces.Space>`_
-            gymnasium.spaces.Space instance.
+            Gymnasium (observation) space instance.
         """
         return self._observation_space
 
@@ -105,7 +105,7 @@ class RlEnv(ScenarioControlEnv, Env):
         Returns
         -------
         `gymnasium.spaces.Space <https://gymnasium.farama.org/api/spaces/#gymnasium.spaces.Space>`_
-            gymnasium.spaces.Space instance.
+            Gymnasium (action) space instance.
         """
         return self._gym_action_space
 
@@ -118,8 +118,11 @@ class RlEnv(ScenarioControlEnv, Env):
         Parameters
         ----------
         return_as_observations : `bool`, optional
-            If True, the observation is returned as a gymnasium.spaces.Space instance,
-            otherwise as a epyt_flow.simulation.ScadaData instance.
+            If True, the observation is returned as a
+            `gymnasium.spaces.Space <https://gymnasium.farama.org/api/spaces/#gymnasium.spaces.Space>`_
+            instance, otherwise as a
+            `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_
+            instance.
 
             .. warning::
 
@@ -130,6 +133,12 @@ class RlEnv(ScenarioControlEnv, Env):
             The seed that is used to initialize the environment's PRNG.
 
             The default is None.
+
+        Returns
+        -------
+        `tuple[np.ndarray, dict]`
+            Observation, {"scada_data": `ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_}
+            (`epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_ as additional info).
         """
         if self._scenario_sim is None:
             return_as_observations = True
@@ -189,13 +198,13 @@ class RlEnv(ScenarioControlEnv, Env):
 
         Parameters
         ----------
-        action : `numpy.ndarray`
+        action : `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
             Actions to be executed.
 
         Returns
         -------
         `tuple[np.ndarray, float, bool, bool, dict]`
-            Observation, reward, terminated, False (truncated), {scada_data: ScadaData}
+            Observation, reward, terminated, False (truncated), {"scada_data": `ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_}
             (`epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_ as additional info).
         """
         # Apply actions

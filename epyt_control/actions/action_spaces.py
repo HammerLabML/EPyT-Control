@@ -13,7 +13,9 @@ class ActionSpace():
     @abstractmethod
     def to_gym_action_space(self) -> Space:
         """
-        Converts this action into a gymnasium.spaces.Space instance.
+        Converts this action into a
+        `gymnasium.spaces.Space <https://gymnasium.farama.org/api/spaces/#gymnasium.spaces.Space>`_
+        instance.
 
         Returns
         -------
