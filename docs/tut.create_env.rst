@@ -44,7 +44,7 @@ instance, and must return a reward -- this function can make arbitrary changes t
 `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_
 instance because it will be discarded after this function is called.
 
-The `__init__` function of the parent class requires the scenario configuration ( as a
+The `__init__` function of the parent class requires the scenario configuration (as a
 `epyt_flow.simulation.ScenarioConfig <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.html#epyt_flow.simulation.scenario_config.ScenarioConfig>`_
 instance) describing the scenario for which a control strategy is required.
 
