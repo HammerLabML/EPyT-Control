@@ -25,7 +25,7 @@ class PumpSpeedActionSpace(ActionSpace):
 
         The default is None.
     """
-    def __init__(self, pump_id: str, speed_lower_bound: float = 0,
+    def __init__(self, pump_id: str, speed_lower_bound: float = 0.,
                  speed_upper_bound: float = None, **kwds):
         if not isinstance(pump_id, str):
             raise TypeError("'pump_id' must be an instance of 'str' " +
