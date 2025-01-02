@@ -1,2 +1,2 @@
-epyt_flow>=0.9.0
+epyt_flow>=0.10.0
 stable-baselines3
