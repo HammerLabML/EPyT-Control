@@ -5,6 +5,7 @@ EPANET-MSX scenario (no control over pumps, valves, etc.).
 """
 import os
 import uuid
+from typing import Optional
 import numpy as np
 from epyt_flow.simulation import ScenarioConfig, ScenarioSimulator
 from epyt_flow.utils import get_temp_folder
@@ -63,7 +64,7 @@ class AdvancedQualityControlEnv(RlEnv):
         super().__init__(scenario_config=scenario_config, gym_action_space=gym_action_space,
                          action_spaces=action_space, **kwds)
 
-    def reset(self, return_as_observations: bool = False, seed: int = None
+    def reset(self, return_as_observations: bool = False, seed: Optional[int] = None
               ) -> tuple[np.ndarray, dict]:
 
         if self._scenario_sim is None:

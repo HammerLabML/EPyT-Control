@@ -1,6 +1,7 @@
 """
 This module contains a class for modeling pump speed action spaces.
 """
+from typing import Optional
 from epyt_flow.gym import ScenarioControlEnv
 from gymnasium.spaces import Space, Box
 
@@ -26,7 +27,7 @@ class PumpSpeedActionSpace(ActionSpace):
         The default is None.
     """
     def __init__(self, pump_id: str, speed_lower_bound: float = 0.,
-                 speed_upper_bound: float = None, **kwds):
+                 speed_upper_bound: Optional[float] = None, **kwds):
         if not isinstance(pump_id, str):
             raise TypeError("'pump_id' must be an instance of 'str' " +
                             f"but not of '{type(pump_id)}'")
