@@ -17,7 +17,7 @@ therefore it provides full compatibility with the
 
 ## Installation
 
-EPyT-Control supports Python 3.9 - 3.12
+EPyT-Control supports Python 3.9 - 3.13
 
 ### PyPI
 

@@ -4,7 +4,7 @@
 Installation
 ************
 
-Note that EPyT-Control supports Python 3.9 - 3.12
+Note that EPyT-Control supports Python 3.9 - 3.13
 
 .. note::
 
