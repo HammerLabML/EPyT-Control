@@ -5,7 +5,7 @@ from abc import abstractmethod
 import os
 import uuid
 from copy import deepcopy
-from typing import Optional
+from typing import Optional, Any
 import numpy as np
 from epyt_flow.simulation import ScadaData, ScenarioConfig, ScenarioSimulator
 from epyt_flow.gym import ScenarioControlEnv
@@ -110,7 +110,8 @@ class RlEnv(ScenarioControlEnv, Env):
         """
         return self._gym_action_space
 
-    def reset(self, return_as_observations: bool = False, seed: Optional[int] = None
+    def reset(self, return_as_observations: bool = False, seed: Optional[int] = None,
+              options: Optional[dict[str, Any]] = None
               ) -> tuple[np.ndarray, dict]:
         """
         Resets this environment to an initial internal state, returning an
@@ -132,6 +133,11 @@ class RlEnv(ScenarioControlEnv, Env):
             The default is False.
         seed : `int`, optional
             The seed that is used to initialize the environment's PRNG.
+
+            The default is None.
+        options : `dict[str, Any]`, optional
+            Additional information to specify how the environment is reset
+            (optional, depending on the specific environment).
 
             The default is None.
 
