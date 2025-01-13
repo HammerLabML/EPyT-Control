@@ -7,12 +7,12 @@ from epyt_flow.gym import ScenarioControlEnv
 from epyt_flow.simulation.events import ActuatorConstants
 from gymnasium.spaces import Space, Discrete
 
-from .action_spaces import ActionSpace
+from .actions import Action
 
 
-class ActuatorStateActionSpace(ActionSpace):
+class ActuatorStateAction(Action):
     """
-    Base class of an actuator state action space.
+    Base class of an actuator state action.
 
     Parameters
     ----------
@@ -51,9 +51,9 @@ class ActuatorStateActionSpace(ActionSpace):
         return Discrete(len(self._action_space))
 
 
-class ValveStateActionSpace(ActuatorStateActionSpace):
+class ValveStateAction(ActuatorStateAction):
     """
-    Action space for controlling the state of a valve.
+    Action for controlling the state of a valve.
 
     Parameters
     ----------
@@ -88,9 +88,9 @@ class ValveStateActionSpace(ActuatorStateActionSpace):
         env.set_valve_status(self._valve_id, action_value)
 
 
-class PumpStateActionSpace(ActuatorStateActionSpace):
+class PumpStateAction(ActuatorStateAction):
     """
-    Action space for controling the state of a pump.
+    Action for controling the state of a pump.
 
     Parameters
     ----------

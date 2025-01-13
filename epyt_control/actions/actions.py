@@ -1,19 +1,19 @@
 """
-This module contains a base class for action spaces.
+This module contains a base class for actions.
 """
 from abc import abstractmethod
 from gymnasium.spaces import Space
 from epyt_flow.gym import ScenarioControlEnv
 
 
-class ActionSpace():
+class Action():
     """
     Base class for actions.
     """
     @abstractmethod
     def to_gym_action_space(self) -> Space:
         """
-        Converts this action into a
+        Converts this action to a
         `gymnasium.spaces.Space <https://gymnasium.farama.org/api/spaces/#gymnasium.spaces.Space>`_
         instance.
 
@@ -27,7 +27,7 @@ class ActionSpace():
     @abstractmethod
     def apply(self, env: ScenarioControlEnv, action_value) -> None:
         """
-        Applies a given action (from this action space) in a given environment.
+        Applies a given action (from the action space) in a given environment.
 
         Parameters
         ----------

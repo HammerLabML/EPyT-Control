@@ -57,30 +57,30 @@ instance) describing the scenario for which a control strategy is required.
 Furthermore, the action space has to be specied as well. For that,
 :class:`~epyt_control.envs.hydraulic_control_env.HydraulicControlEnv` and
 :class:`~epyt_control.envs.advanced_quality_control_env.AdvancedQualityControlEnv`
-provide arguments where a list of all action spaces (per action type) have to be specified --
-please see the following tables for an overview of all supported actions.
+provide arguments where a list of all actions (per action type) specify the action space --
+please see the following tables for an overview of all supported types of actions.
 
 Possible actions in an EPANET scenario (i.e. an :class:`~epyt_control.envs.hydraulic_control_env.HydraulicControlEnv` instance):
 
-+----------------------------------------------------------------------------------+-------------------------------+
-| Implementation                                                                   | Description                   |
-+==================================================================================+===============================+
-| :class:`~epyt_control.actions.actuator_state_space.ValveStateActionSpace`        | Opening/Closing a valve.      |
-+----------------------------------------------------------------------------------+-------------------------------+
-| :class:`~epyt_control.actions.actuator_state_space.PumpStateActionSpace`         | Starting/Stopping a pump.     |
-+----------------------------------------------------------------------------------+-------------------------------+
-| :class:`~epyt_control.actions.pump_speed_action_space.PumpSpeedActionSpace`      | Setting the speed of a pump.  |
-+----------------------------------------------------------------------------------+-------------------------------+
-| :class:`~epyt_control.actions.quality_action_space.ChemicalInjectionActionSpace` | Injecting the chemical.       |
-+----------------------------------------------------------------------------------+-------------------------------+
++------------------------------------------------------------------------+-------------------------------+
+| Implementation                                                         | Description                   |
++========================================================================+===============================+
+| :class:`~epyt_control.actions.actuator_state_actions.ValveStateAction` | Opening/Closing a valve.      |
++------------------------------------------------------------------------+-------------------------------+
+| :class:`~epyt_control.actions.actuator_state_actions.PumpStateAction`  | Starting/Stopping a pump.     |
++------------------------------------------------------------------------+-------------------------------+
+| :class:`~epyt_control.actions.pump_speed_actions.PumpSpeedAction`      | Setting the speed of a pump.  |
++------------------------------------------------------------------------+-------------------------------+
+| :class:`~epyt_control.actions.quality_actions.ChemicalInjectionAction` | Injecting the chemical.       |
++------------------------------------------------------------------------+-------------------------------+
 
 Possible actions in an EPANET-MSX scenario (i.e. an :class:`~epyt_control.envs.advanced_quality_control_env.AdvancedQualityControlEnv` instance):
 
-+---------------------------------------------------------------------------------+--------------------------------+
-| Implementation                                                                  | Description                    |
-+=================================================================================+================================+
-| :class:`~epyt_control.actions.quality_action_space.SpeciesInjectionActionSpace` | Injecting a specific species.  |
-+---------------------------------------------------------------------------------+--------------------------------+
++-----------------------------------------------------------------------+--------------------------------+
+| Implementation                                                        | Description                    |
++=======================================================================+================================+
+| :class:`~epyt_control.actions.quality_actions.SpeciesInjectionAction` | Injecting a specific species.  |
++-----------------------------------------------------------------------+--------------------------------+
 
 
 Example
@@ -127,11 +127,11 @@ and we decide not to re-run the hydraulic simulation when the environment is res
 
     class MyEnv(AdvancedQualityControlEnv):
         def __init__(self, scenario_config_file_in: str):
-            cl_injection_action = SpeciesInjectionActionSpace(species_id="CL2",
-                                                              node_id="1",
-                                                              pattern_id="cl2-injection-at-node_1",
-                                                              source_type_id=ToolkitConstants.EN_MASS,
-                                                              upper_bound=10000.)
+            cl_injection_action = SpeciesInjectionAction(species_id="CL2",
+                                                         node_id="1",
+                                                         pattern_id="cl2-injection-at-node_1",
+                                                         source_type_id=ToolkitConstants.EN_MASS,
+                                                         upper_bound=10000.)
 
             scenario_config = ScenarioConfig.load_from_file(scenario_config_file_in)
             super().__init__(scenario_config=scenario_config,

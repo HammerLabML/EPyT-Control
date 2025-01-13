@@ -14,7 +14,7 @@ from gymnasium import Env
 from gymnasium.spaces import Space, Box, Discrete, Tuple
 from gymnasium.spaces.utils import flatten_space
 
-from ..actions import ActionSpace
+from ..actions import Action
 
 
 class RlEnv(ScenarioControlEnv, Env):
@@ -27,7 +27,7 @@ class RlEnv(ScenarioControlEnv, Env):
         Config of the scenario.
     gym_action_space : `gymnasium.spaces.Space <https://gymnasium.farama.org/api/spaces/#gymnasium.spaces.Space>`_
         Gymnasium action space.
-    action_spaces : list[:class:`~epyt_control.actions.action_spaces.ActionSpace`]
+    action_space : list[:class:`~epyt_control.actions.actions.Action`]
         List of all action spaces -- one space for each element that can be controlled by the agent.
     reload_scenario_when_reset : `bool`, optional
         If True, the scenario (incl. the .inp and .msx file) is reloaded from the hard disk.
@@ -36,18 +36,18 @@ class RlEnv(ScenarioControlEnv, Env):
         The default is True.
     """
     def __init__(self, scenario_config: ScenarioConfig, gym_action_space: Space,
-                 action_spaces: list[ActionSpace], reload_scenario_when_reset: bool = True,
+                 action_space: list[Action], reload_scenario_when_reset: bool = True,
                  **kwds):
         if not isinstance(gym_action_space, Space):
             raise TypeError("'gym_action_space' must be an instance of 'gymnasium.spaces.Space' " +
                             f"but not of '{type(gym_action_space)}'")
-        if not isinstance(action_spaces, list):
+        if not isinstance(action_space, list):
             raise TypeError("'action_spaces' must be an instance of " +
-                            "'list[epyt_control.actions.ActionSpace]' " +
-                            f"but not of '{type(action_spaces)}'")
-        if any(not isinstance(a_s, ActionSpace) for a_s in action_spaces):
+                            "'list[epyt_control.actions.Action]' " +
+                            f"but not of '{type(action_space)}'")
+        if any(not isinstance(a_s, Action) for a_s in action_space):
             raise TypeError("Every item in 'action_spaces' must be an instance of " +
-                            "'epyt_control.actions.ActionSpace'")
+                            "'epyt_control.actions.Action'")
         if not isinstance(reload_scenario_when_reset, bool):
             raise TypeError("'reload_scenario_when_reset' must be an instance of 'bool' " +
                             f"but not of '{type(reload_scenario_when_reset)}'")
@@ -55,7 +55,7 @@ class RlEnv(ScenarioControlEnv, Env):
         super().__init__(scenario_config=scenario_config, **kwds)
 
         self._observation_space = self._get_observation_space()
-        self._action_spaces = action_spaces
+        self._action_space = action_space
         self._gym_action_space = gym_action_space
         self._reload_scenario_when_reset = reload_scenario_when_reset
 
@@ -215,8 +215,8 @@ class RlEnv(ScenarioControlEnv, Env):
             (`epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_ as additional info).
         """
         # Apply actions
-        for action_value, action_space in zip(action, self._action_spaces):
-            action_space.apply(self, action_value)
+        for action_value, action in zip(action, self._action_space):
+            action.apply(self, action_value)
 
         # Run one simulation step and observe the sensor readings (SCADA data)
         if self.autoreset is False:

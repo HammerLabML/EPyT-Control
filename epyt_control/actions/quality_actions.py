@@ -8,12 +8,12 @@ from epyt_flow.gym import ScenarioControlEnv
 from epyt_flow.simulation import ToolkitConstants
 from gymnasium.spaces import Space, Box
 
-from .action_spaces import ActionSpace
+from .actions import Action
 
 
-class ChemicalInjectionActionSpace(ActionSpace):
+class ChemicalInjectionAction(Action):
     """
-    Action space for controlling the injection of a chemical -- only for EPANET control scenarios.
+    Action for controlling the injection of a chemical -- only for EPANET control scenarios.
 
     Parameters
     ----------
@@ -150,9 +150,9 @@ class ChemicalInjectionActionSpace(ActionSpace):
         env.set_node_quality_source_value(self._node_id, self._pattern_id, action_value)
 
 
-class SpeciesInjectionActionSpace(ChemicalInjectionActionSpace):
+class SpeciesInjectionAction(ChemicalInjectionAction):
     """
-    Action space for controlling the injection of a given species --
+    Action for controlling the injection of a given species --
     only for EPANET-MSX control scenarios.
 
     Parameters

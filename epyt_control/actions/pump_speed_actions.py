@@ -5,12 +5,12 @@ from typing import Optional
 from epyt_flow.gym import ScenarioControlEnv
 from gymnasium.spaces import Space, Box
 
-from .action_spaces import ActionSpace
+from .actions import Action
 
 
-class PumpSpeedActionSpace(ActionSpace):
+class PumpSpeedAction(Action):
     """
-    Action space for controlling the speed of a pump.
+    Action for controlling the speed of a pump.
 
     Parameters
     ----------
