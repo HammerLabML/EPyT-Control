@@ -11,6 +11,7 @@ from epyt_flow.simulation import ScenarioConfig, ScenarioSimulator
 from epyt_flow.utils import get_temp_folder
 from gymnasium.spaces import Dict
 from gymnasium.spaces.utils import flatten_space
+from gymnasium import Env
 
 from ..actions.quality_actions import SpeciesInjectionAction
 from .rl_env import RlEnv
@@ -64,11 +65,9 @@ class AdvancedQualityControlEnv(RlEnv):
         super().__init__(scenario_config=scenario_config, gym_action_space=gym_action_space,
                          action_space=action_space, **kwds)
 
-    def reset(self, return_as_observations: bool = False, seed: Optional[int] = None,
-              options: Optional[dict[str, Any]] = None) -> tuple[np.ndarray, dict]:
-
-        if self._scenario_sim is None:
-            return_as_observations = True
+    def reset(self, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None
+              ) -> tuple[np.ndarray, dict]:
+        Env.reset(self, seed=seed)
 
         if self._rerun_hydraulics_when_reset is True:
             scada_data = super().reset()
@@ -80,6 +79,13 @@ class AdvancedQualityControlEnv(RlEnv):
                 # Run hydraulic simulation first
                 sim = self._scenario_sim.run_hydraulic_simulation
                 self._hydraulic_scada_data = sim(hyd_export=self._hyd_export)
+            else:
+                # Abort current simulation if any is runing
+                try:
+                    next(self._sim_generator)
+                    self._sim_generator.send(True)
+                except StopIteration:
+                    pass
 
             # Run advanced quality analysis (EPANET-MSX) on top of the computed hydraulics
             gen = self._scenario_sim.run_advanced_quality_simulation_as_generator
@@ -88,7 +94,8 @@ class AdvancedQualityControlEnv(RlEnv):
             scada_data = self._next_sim_itr()
 
         r = scada_data
-        if return_as_observations is True:
-            r = self._get_observation(r)
+        if isinstance(r, tuple):
+            r, _ = r
+        r = self._get_observation(r)
 
         return r, {"scada_data": scada_data}

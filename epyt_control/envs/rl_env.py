@@ -5,7 +5,7 @@ from abc import abstractmethod
 import os
 import uuid
 from copy import deepcopy
-from typing import Optional, Any
+from typing import Optional, Any, Union
 import numpy as np
 from epyt_flow.simulation import ScadaData, ScenarioConfig, ScenarioSimulator
 from epyt_flow.gym import ScenarioControlEnv
@@ -110,8 +110,29 @@ class RlEnv(ScenarioControlEnv, Env):
         """
         return self._gym_action_space
 
-    def reset(self, return_as_observations: bool = False, seed: Optional[int] = None,
-              options: Optional[dict[str, Any]] = None
+    def _next_sim_itr(self) -> Union[tuple[ScadaData, bool], ScadaData]:
+        try:
+            next(self._sim_generator)
+            scada_data = self._sim_generator.send(False)
+
+            if self._scenario_sim.f_msx_in is not None:
+                cur_time = int(scada_data.sensor_readings_time[0])
+                cur_hyd_scada_data = self._hydraulic_scada_data.\
+                    extract_time_window(cur_time, cur_time)
+                scada_data.join(cur_hyd_scada_data)
+
+            if self.autoreset is True:
+                return scada_data
+            else:
+                return scada_data, False
+        except StopIteration:
+            if self.autoreset is True:
+                _, info = self.reset()
+                return info["scada_data"]
+            else:
+                return None, True
+
+    def reset(self, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None
               ) -> tuple[np.ndarray, dict]:
         """
         Resets this environment to an initial internal state, returning an
@@ -119,18 +140,6 @@ class RlEnv(ScenarioControlEnv, Env):
 
         Parameters
         ----------
-        return_as_observations : `bool`, optional
-            If True, the observation is returned as a
-            `gymnasium.spaces.Space <https://gymnasium.farama.org/api/spaces/#gymnasium.spaces.Space>`_
-            instance, otherwise as a
-            `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_
-            instance.
-
-            .. warning::
-
-                Use with care -- `return_as_observations` might be overwritten internally.
-
-            The default is False.
         seed : `int`, optional
             The seed that is used to initialize the environment's PRNG.
 
@@ -143,18 +152,25 @@ class RlEnv(ScenarioControlEnv, Env):
 
         Returns
         -------
-        `tuple[np.ndarray, dict]`
-            Observation, {"scada_data": `ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_}
+        tuple[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_, dict]
+            Observation (`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_),
+            {"scada_data": `ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_}
             (`epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_ as additional info).
         """
-        if self._scenario_sim is None:
-            return_as_observations = True
+        Env.reset(self, seed=seed)
 
         if self._reload_scenario_when_reset is True:
             scada_data = super().reset()
         else:
             if self._scenario_sim is None:
                 self._scenario_sim = ScenarioSimulator(scenario_config=self._scenario_config)
+            else:
+                # Abort current simulation if any is runing
+                try:
+                    next(self._sim_generator)
+                    self._sim_generator.send(True)
+                except StopIteration:
+                    pass
 
             if self._scenario_sim.f_msx_in is not None:
                 hyd_export = os.path.join(get_temp_folder(), f"epytflow_env_MSX_{uuid.uuid4()}.hyd")
@@ -170,14 +186,15 @@ class RlEnv(ScenarioControlEnv, Env):
             scada_data = self._next_sim_itr()
 
         r = scada_data
-        if return_as_observations is True:
-            r = self._get_observation(r)
+        if isinstance(r, tuple):
+            r, _ = r
+        r = self._get_observation(r)
 
         return r, {"scada_data": scada_data}
 
     def _get_observation(self, scada_data: ScadaData) -> np.ndarray:
         if scada_data is not None:
-            return scada_data.get_data()
+            return scada_data.get_data().flatten().astype(np.float32)
         else:
             return None
 
@@ -210,8 +227,8 @@ class RlEnv(ScenarioControlEnv, Env):
 
         Returns
         -------
-        `tuple[np.ndarray, float, bool, bool, dict]`
-            Observation, reward, terminated, False (truncated), {"scada_data": `ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_}
+        tuple[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_, float, bool, bool, dict]
+            Observation (`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_), reward, terminated, False (truncated), {"scada_data": `ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_}
             (`epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_ as additional info).
         """
         # Apply actions
@@ -222,16 +239,20 @@ class RlEnv(ScenarioControlEnv, Env):
         if self.autoreset is False:
             current_scada_data, terminated = self._next_sim_itr()
         else:
-            terminated = None
+            terminated = False
             current_scada_data = self._next_sim_itr()
 
         if isinstance(current_scada_data, tuple):
             current_scada_data, _ = current_scada_data
 
-        obs = self._get_observation(current_scada_data)
+        if terminated is False:
+            obs = self._get_observation(current_scada_data)
 
-        # Calculate reward
-        current_reward = self._compute_reward_function(deepcopy(current_scada_data))
+            # Calculate reward
+            current_reward = self._compute_reward_function(deepcopy(current_scada_data))
+        else:
+            obs = None
+            current_reward = None
 
         # Return observation and reward
         return obs, current_reward, terminated, False, {"scada_data": current_scada_data}
