@@ -2,7 +2,8 @@
 This module contains a base class for EPANET control environments --
 i.e. controlling hydraulic actuators such as pumps and valves or single chemical (no EPANET-MSX support!).
 """
-from typing import Optional
+from typing import Optional, Any
+import numpy as np
 from epyt_flow.simulation import ScenarioConfig
 from gymnasium.spaces import Dict
 from gymnasium.spaces.utils import flatten_space
@@ -115,3 +116,69 @@ class HydraulicControlEnv(RlEnv):
 
         super().__init__(scenario_config=scenario_config, gym_action_space=gym_action_space,
                          action_space=my_actions, **kwds)
+
+
+class MultiConfigHydraulicControlEnv(HydraulicControlEnv):
+    """
+    Base class for hydraulic control environments (incl. basic quality that can be simulated
+    with EPANET only) that can handle multiple scenario configurations -- those scenarios are
+    utilized in a round-robin scheduling scheme (i.e. autorest=True).
+
+    Parameters
+    ----------
+    scenario_configs : list[`epyt_flow.simulation.ScenarioConfig <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.html#epyt_flow.simulation.scenario_config.ScenarioConfig>`_]
+        List of all scenario configurations that are used in this environment.
+    pumps_speed_actions : list[:class:`~epyt_control.actions.pump_speed_actions.PumpSpeedAction`], optional
+        List of pumps where the speed has to be controlled.
+
+        The default is None.
+    pumps_state_actions : list[:class:`~epyt_control.actions.actuator_state_actions.PumpStateAction`], optional
+        Lisst of pumps where the state has to be controlled.
+
+        The default is None.
+    valves_state_actions : list[:class:`~epyt_control.actions.actuator_state_actions.ValveStateAction`], optional
+        List of valves that have to be controlled.
+
+        The default is None.
+    chemical_injection_actions : list[:class:`~epyt_control.actions.quality_actions.ChemicalInjectionAction`], optional
+        List chemical injection actions -- i.e. places in the network where the
+        injection of the chemical has to be controlled.
+
+        The default is None.
+    """
+    def __init__(self, scenario_configs: list[ScenarioConfig],
+                 pumps_speed_actions: Optional[list[PumpSpeedAction]] = None,
+                 pumps_state_actions: Optional[list[PumpStateAction]] = None,
+                 valves_state_actions: Optional[list[ValveStateAction]] = None,
+                 chemical_injection_actions: Optional[list[ChemicalInjectionAction]] = None,
+                 reload_scenario_when_reset: bool = True,
+                 **kwds):
+        if not isinstance(scenario_configs, list):
+            raise TypeError("'scenario_configs' must be an instance of " +
+                            "epyt_flow.simulation.ScenarioConfig but " +
+                            f"not of '{type(scenario_configs)}'")
+        if any(not isinstance(scenario_config, ScenarioConfig)
+               for scenario_config in scenario_configs):
+            raise TypeError("All items in 'scenario_config' must be instances of " +
+                            "epyt_flow.simulation.ScenarioConfig")
+
+        self._scenario_configs = scenario_configs
+        self._scenario_sims = [None] * len(scenario_configs)
+        self._current_scenario_idx = 0
+
+        super().__init__(self._scenario_configs[self._current_scenario_idx], pumps_speed_actions,
+                         pumps_state_actions, valves_state_actions, chemical_injection_actions,
+                         autoreset=True,
+                         reload_scenario_when_reset=reload_scenario_when_reset, **kwds)
+
+    def reset(self, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None
+              ) -> tuple[np.ndarray, dict]:
+        # Back up current simulation
+        self._scenario_sims[self._current_scenario_idx] = self._scenario_sim
+
+        # Move on to next scenario
+        self._current_scenario_idx = self._current_scenario_idx + 1 % len(self._scenario_configs)
+        self._scenario_config = self._scenario_configs[self._current_scenario_idx]
+        self._scenario_sim = self._scenario_sims[self._current_scenario_idx]
+
+        return super().reset(seed, options)

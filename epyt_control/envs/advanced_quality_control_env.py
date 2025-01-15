@@ -99,3 +99,58 @@ class AdvancedQualityControlEnv(RlEnv):
         r = self._get_observation(r)
 
         return r, {"scada_data": scada_data}
+
+
+class MultiConfigAdvancedQualityControlEnv(AdvancedQualityControlEnv):
+    """
+    Base class for advanced quality control scenarios (i.e. EPANET-MSX control scenarios) that can
+    handle multiple scenario configurations -- those scenarios are utilized in a round-robin
+    scheduling scheme (i.e. autorest=True).
+
+    Parameters
+    ----------
+    scenario_configs : list[`epyt_flow.simulation.ScenarioConfig <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.html#epyt_flow.simulation.scenario_config.ScenarioConfig>`_]
+        Configuration of the scenario.
+    action_space : list[:class:`~epyt_control.actions.quality_actions.SpeciesInjectionAction`]
+        The action spaces (i.e. list of species injections) that have to be controlled by the agent.
+    rerun_hydraulics_when_reset : `bool`
+        If True, the hydraulic simulation is going to be re-run when the environment is reset,
+        otherwise the hydraulics from the initial run are re-used and the scenario will
+        also not be reloaded -- i.e. reload_scenario_when_reset=False.
+    """
+    def __init__(self, scenario_configs: list[ScenarioConfig],
+                 action_space: list[SpeciesInjectionAction],
+                 rerun_hydraulics_when_reset: bool = True, **kwds):
+        if not isinstance(scenario_configs, list):
+            raise TypeError("'scenario_configs' must be an instance of " +
+                            "epyt_flow.simulation.ScenarioConfig but " +
+                            f"not of '{type(scenario_configs)}'")
+        if any(not isinstance(scenario_config, ScenarioConfig)
+               for scenario_config in scenario_configs):
+            raise TypeError("All items in 'scenario_config' must be instances of " +
+                            "epyt_flow.simulation.ScenarioConfig")
+
+        self._scenario_configs = scenario_configs
+        self._scenario_sims = [None] * len(scenario_configs)
+        self._hyd_exports = [os.path.join(get_temp_folder(),
+                                          f"epytcontrol_env_MSX_{uuid.uuid4()}.hyd")
+                             for _ in range(len(scenario_configs))]
+        self._current_scenario_idx = 0
+
+        super().__init__(self._scenario_configs[self._current_scenario_idx],
+                         action_space, rerun_hydraulics_when_reset,
+                         autoreset=True, **kwds)
+        self._hyd_export = self._hyd_exports[self._current_scenario_idx]
+
+    def reset(self, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None
+              ) -> tuple[np.ndarray, dict]:
+        # Back up current simulation
+        self._scenario_sims[self._current_scenario_idx] = self._scenario_sim
+
+        # Move on to next scenario
+        self._current_scenario_idx = self._current_scenario_idx + 1 % len(self._scenario_configs)
+        self._scenario_config = self._scenario_configs[self._current_scenario_idx]
+        self._scenario_sim = self._scenario_sims[self._current_scenario_idx]
+        self._hyd_export = self._hyd_exports[self._current_scenario_idx]
+
+        return super().reset(seed, options)
