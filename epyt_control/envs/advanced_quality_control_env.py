@@ -17,7 +17,7 @@ from ..actions.quality_actions import SpeciesInjectionAction
 from .rl_env import RlEnv
 
 
-class AdvancedQualityControlEnv(RlEnv):
+class EpanetMsxControlEnv(RlEnv):
     """
     Base class for advanced quality control scenarios -- i.e. EPANET-MSX control scenarios.
 
@@ -101,7 +101,10 @@ class AdvancedQualityControlEnv(RlEnv):
         return r, {"scada_data": scada_data}
 
 
-class MultiConfigAdvancedQualityControlEnv(AdvancedQualityControlEnv):
+AdvancedQualityControlEnv = EpanetMsxControlEnv
+
+
+class MultiConfigEpanetMsxControlEnv(EpanetMsxControlEnvControlEnv):
     """
     Base class for advanced quality control scenarios (i.e. EPANET-MSX control scenarios) that can
     handle multiple scenario configurations -- those scenarios are utilized in a round-robin
@@ -154,3 +157,6 @@ class MultiConfigAdvancedQualityControlEnv(AdvancedQualityControlEnv):
         self._hyd_export = self._hyd_exports[self._current_scenario_idx]
 
         return super().reset(seed, options)
+
+
+MultiConfigAdvancedQualityControlEnv = MultiConfigEpanetMsxControlEnv

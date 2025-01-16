@@ -37,6 +37,13 @@ Creating a custom environment requires deriving a child class from
 :class:`~epyt_control.envs.advanced_quality_control_env.AdvancedQualityControlEnv`
 (if you are dealing with an EPANET-MSX scenario).
 
+.. note::
+
+    Note that ``EpanetControlEnv`` is a synonym for
+    :class:`~epyt_control.envs.hydraulic_control_env.HydraulicControlEnv` and
+    ``EpanetMsxControlEnv`` is a synonym for
+    :class:`~epyt_control.envs.advanced_quality_control_env.AdvancedQualityControlEnv`.
+
 In this child class, you have to overwrite and implement the :func:`~epyt_control.envs.rl_env.RlEnv._compute_reward_function`
 function. This function gets as an input the system state as a
 `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_
@@ -71,7 +78,7 @@ Possible actions in an EPANET scenario (i.e. an :class:`~epyt_control.envs.hydra
 +------------------------------------------------------------------------+-------------------------------+
 | :class:`~epyt_control.actions.pump_speed_actions.PumpSpeedAction`      | Setting the speed of a pump.  |
 +------------------------------------------------------------------------+-------------------------------+
-| :class:`~epyt_control.actions.quality_actions.ChemicalInjectionAction` | Injecting the chemical.       |
+| :class:`~epyt_control.actions.quality_actions.ChemicalInjectionAction` | Injecting a chemical.         |
 +------------------------------------------------------------------------+-------------------------------+
 
 Possible actions in an EPANET-MSX scenario (i.e. an :class:`~epyt_control.envs.advanced_quality_control_env.AdvancedQualityControlEnv` instance):
@@ -81,6 +88,22 @@ Possible actions in an EPANET-MSX scenario (i.e. an :class:`~epyt_control.envs.a
 +=======================================================================+================================+
 | :class:`~epyt_control.actions.quality_actions.SpeciesInjectionAction` | Injecting a specific species.  |
 +-----------------------------------------------------------------------+--------------------------------+
+
+
+Multi-Config Environments
+-------------------------
+
+The environments :class:`~epyt_control.envs.hydraulic_control_env.HydraulicControlEnv` and
+:class:`~epyt_control.envs.advanced_quality_control_env.AdvancedQualityControlEnv` can only handle
+a single EPANET or EPANET-MSX scenario. 
+
+However, the corresponding equivalents
+:class:`~epyt_control.envs.hydraulic_control_env.MultiConfigHydraulicControlEnv`
+(also available as ``MultiConfigEpanetControlEnv``) and
+:class:`~epyt_control.envs.advanced_quality_control_env.MultiConfigAdvancedQualityControlEnv`
+(also available as ``MultiConfigEpanetMsxControlEnv``)
+support an arbitrary number of scenarios that are processed in a Round-robin scheduling scheme -- i.e.
+the environment switches to the next scenario whenever the current scenario is finished.
 
 
 Example

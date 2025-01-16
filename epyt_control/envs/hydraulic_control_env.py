@@ -14,7 +14,7 @@ from ..actions.quality_actions import ChemicalInjectionAction
 from ..actions.actuator_state_actions import PumpStateAction, ValveStateAction
 
 
-class HydraulicControlEnv(RlEnv):
+class EpanetControlEnv(RlEnv):
     """
     Base class for hydraulic control environments
     (incl. basic quality that can be simulated with EPANET only).
@@ -118,7 +118,10 @@ class HydraulicControlEnv(RlEnv):
                          action_space=my_actions, **kwds)
 
 
-class MultiConfigHydraulicControlEnv(HydraulicControlEnv):
+HydraulicControlEnv = EpanetControlEnv
+
+
+class MultiConfigEpanetControlEnv(EpanetControlEnv):
     """
     Base class for hydraulic control environments (incl. basic quality that can be simulated
     with EPANET only) that can handle multiple scenario configurations -- those scenarios are
@@ -151,8 +154,7 @@ class MultiConfigHydraulicControlEnv(HydraulicControlEnv):
                  pumps_state_actions: Optional[list[PumpStateAction]] = None,
                  valves_state_actions: Optional[list[ValveStateAction]] = None,
                  chemical_injection_actions: Optional[list[ChemicalInjectionAction]] = None,
-                 reload_scenario_when_reset: bool = True,
-                 **kwds):
+                 reload_scenario_when_reset: bool = True):
         if not isinstance(scenario_configs, list):
             raise TypeError("'scenario_configs' must be an instance of " +
                             "epyt_flow.simulation.ScenarioConfig but " +
@@ -169,7 +171,7 @@ class MultiConfigHydraulicControlEnv(HydraulicControlEnv):
         super().__init__(self._scenario_configs[self._current_scenario_idx], pumps_speed_actions,
                          pumps_state_actions, valves_state_actions, chemical_injection_actions,
                          autoreset=True,
-                         reload_scenario_when_reset=reload_scenario_when_reset, **kwds)
+                         reload_scenario_when_reset=reload_scenario_when_reset)
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None
               ) -> tuple[np.ndarray, dict]:
@@ -182,3 +184,6 @@ class MultiConfigHydraulicControlEnv(HydraulicControlEnv):
         self._scenario_sim = self._scenario_sims[self._current_scenario_idx]
 
         return super().reset(seed, options)
+
+
+MultiConfigHydraulicControlEnv = MultiConfigEpanetControlEnv
