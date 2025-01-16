@@ -104,7 +104,7 @@ class EpanetMsxControlEnv(RlEnv):
 AdvancedQualityControlEnv = EpanetMsxControlEnv
 
 
-class MultiConfigEpanetMsxControlEnv(EpanetMsxControlEnvControlEnv):
+class MultiConfigEpanetMsxControlEnv(EpanetMsxControlEnv):
     """
     Base class for advanced quality control scenarios (i.e. EPANET-MSX control scenarios) that can
     handle multiple scenario configurations -- those scenarios are utilized in a round-robin
