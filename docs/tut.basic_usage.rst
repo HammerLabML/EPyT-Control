@@ -4,7 +4,7 @@
 Basic Usage
 ***********
 
-EPyT-Control mimics the interface of `Gymnasium <https://gymnasium.farama.org/>`_ environments,
+EPyT-Control implements the interface of `Gymnasium <https://gymnasium.farama.org/>`_ environments,
 such that the user can focus on building and evaluating control strategies.
 Furthermore, EPyT-Control also integrates the
 `Stable-Baselines3 <https://stable-baselines3.readthedocs.io/en/master/>`_ package such that the
@@ -20,8 +20,8 @@ An example of using a hypothetical environment "MyEnv":
         # Show the observation space
         print(f"Observation space: {env.observation_space}")
 
-        # Run 1000 iterations -- assume that autorest=True
-        obs = env.reset()
+        # Run 1000 iterations -- assuming that autorest=True
+        obs, info = env.reset()
         for _ in range(1000):
             # Sample and apply a random action from the action space.
             # TODO: Replace with some smart RL/control method
@@ -47,7 +47,7 @@ it is really easy to apply a reinforcement learning algorithm to a given environ
     # Evaluate the learned policy:
     # Apply actions as predicted by the learned policy
     with MyEnv() as env:
-        obs = env.reset()
+        obs, info = env.reset()
         for _ in range(1000):
             action, _ = model.predict(obs, deterministic=True)
             obs, reward, terminated, _, _ = env.step(action)
