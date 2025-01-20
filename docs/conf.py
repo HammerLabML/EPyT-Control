@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'EPyT-Control'
-copyright = 'EPyT-Control Developers, 2024'
+copyright = 'EPyT-Control Developers'
 author = 'André Artelt'
 
 
