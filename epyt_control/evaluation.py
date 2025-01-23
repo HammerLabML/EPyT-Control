@@ -28,13 +28,13 @@ def evaluate_policy(env: RlEnv, policy: Callable[[np.ndarray], np.ndarray],
 
     Returns
     -------
-    `tuple[list[float], epyt_flow.simulation.ScadaData]`
+    tuple[list[float], `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_]
         Tuple of rewards over time and a
-        `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_ 
+        `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_
         instance containing the WDN states over time.
     """
     if not isinstance(env, RlEnv):
-        raise TypeError("'env' must be an instance of 'epyt_contro.envs.RlEnv' "+
+        raise TypeError("'env' must be an instance of 'epyt_contro.envs.RlEnv' " +
                         f"but not of '{type(env)}'")
     if not callable(policy):
         raise TypeError("'policy' must be callable -- " +
