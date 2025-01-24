@@ -42,6 +42,58 @@ Install the toolbox:
 pip install .
 ```
 
+
+## Quick Example
+
+#### Interface of Environments
+
+Basic example demonstrating the environments' interface:
+
+```python
+# Define/Specify SimpleChlorineInjectionEnv
+# ....
+
+# Load hypothetical environment "MyEnv"
+with MyEnv() as env:
+    # Show the observation space
+    print(f"Observation space: {env.observation_space}")
+
+    # Run 1000 iterations -- assuming that autorest=True
+    obs, info = env.reset()
+    for _ in range(1000):
+        # Sample and apply a random action from the action space.
+        # TODO: Replace with some smart RL/control method
+        action = env.action_space.sample()
+        obs, reward, terminated, _, _ = env.step(action)
+
+        # Show action and observed reward
+        print(action, reward)
+```
+
+#### Applying Reinforcement Learning to a given Environment
+
+Simple example of using [Stable-Baselines3](https://stable-baselines3.readthedocs.io/en/master/) for learning a policy to control the chlorine injection in a given environment called ```SimpleChlorineInjectionEnv```:
+
+```python
+from stable_baselines3 import PPO
+from gymnasium.wrappers import NormalizeObservation
+
+# Define/Specify SimpleChlorineInjectionEnv
+# ....
+
+# Load chlorine injection environment
+with SimpleChlorineInjectionEnv() as env:
+    # Wrap environment
+    env = NormalizeObservation(env)
+
+    # Apply a simple policy learner
+    # You might want to add more wrappers (e.g. normalizing inputs, rewards, etc.) and logging here
+    # Also, inceasing the number of time steps might help as well
+    model = PPO("MlpPolicy", env, verbose=1)
+    model.learn(total_timesteps=1000)
+    model.save("my_model_clinject.zip")  # Save policy
+```
+
 ## Documentation
 
 Documentation is available on readthedocs: [https://epyt-control.readthedocs.io/en/stable/](https://epyt-control.readthedocs.io/en/stable)
