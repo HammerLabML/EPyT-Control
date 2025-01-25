@@ -49,6 +49,8 @@ def evaluate_policy(env: RlEnv, policy: Callable[[np.ndarray], np.ndarray],
     for _ in range(n_max_iter):
         action = policy(obs)
         obs, reward, terminated, _, info = env.step(action)
+        if terminated is True:
+            break
 
         rewards.append(reward)
         current_scada_data = info["scada_data"]
@@ -56,9 +58,6 @@ def evaluate_policy(env: RlEnv, policy: Callable[[np.ndarray], np.ndarray],
             scada_data = current_scada_data
         else:
             scada_data.concatenate(current_scada_data)
-
-        if terminated:
-            break
 
     env.close()
 
