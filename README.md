@@ -50,7 +50,7 @@ pip install .
 Basic example demonstrating the environments' interface:
 
 ```python
-# Define/Specify SimpleChlorineInjectionEnv
+# Define/Specify MyEnv
 # ....
 
 # Load hypothetical environment "MyEnv"
@@ -107,7 +107,7 @@ MIT license -- see [LICENSE](LICENSE)
 If you use this software, please cite it as follows:
 
 ```
-@misc{github:epytflow,
+@misc{github:epytcontrol,
         author = {André Artelt},
         title = {{EPyT-Control -- EPANET Python Toolkit - Control}},
         year = {2024},
