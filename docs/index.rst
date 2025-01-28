@@ -21,6 +21,7 @@ therefore it provides full compatibility with the
     installation
     tut.basic_usage
     tut.create_env
+    tut.pid_controller
 
 
 API Reference
