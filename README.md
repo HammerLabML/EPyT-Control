@@ -7,6 +7,8 @@
 
 # EPyT-Control -- EPANET Python Toolkit - Control
 
+<img src="https://github.com/WaterFutures/EPyT-Control/blob/main/docs/_static/gimmick.png?raw=true" align="center" height="230px"/>
+
 EPyT-Control is a Python package building on top of [EPyT-Flow](https://github.com/WaterFutures/EPyT-Flow) 
 for implementing and evaluating control algorithms & strategies in water distribution networks (WDNs).
 
