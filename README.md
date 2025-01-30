@@ -17,6 +17,18 @@ therefore it provides full compatibility with the
 [Stable-Baselines3](https://stable-baselines3.readthedocs.io/en/master/) package.
 
 
+## Unique Features
+
+Unique features of EPyT-Control are the following:
+
+- Support of hydraulic and (advanced) water quality simulation (i.e. EPANET and EPANET-MSX are supported)
+- Compatibility with [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) and integration of [Stable-Baselines3](https://stable-baselines3.readthedocs.io/en/master/)
+- Wide variety of pre-defined actions (e.g. pump state actions, pump speed actons, valve state actions, species injection actions, etc.)
+- Implementation of classic control aglorithms such as PID controllers
+- High- and low-level interface
+- Object-orientated design that is easy to extend and customize
+
+
 ## Installation
 
 EPyT-Control supports Python 3.9 - 3.13
