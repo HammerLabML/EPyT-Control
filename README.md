@@ -124,7 +124,7 @@ If you use this software, please cite it as follows:
 @misc{github:epytcontrol,
         author = {André Artelt},
         title = {{EPyT-Control -- EPANET Python Toolkit - Control}},
-        year = {2024},
+        year = {2025},
         publisher = {GitHub},
         journal = {GitHub repository},
         howpublished = {\url{https://github.com/WaterFutures/EPyT-Control}}
