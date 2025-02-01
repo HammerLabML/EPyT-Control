@@ -26,7 +26,7 @@ dynamic = ["version", "readme", "dependencies"]
 
 [project.urls]
 Homepage = "https://github.com/WaterFutures/EPyT-Control"
-Documentation = "https://epyt-control.readthedocs.io/en/latest/"
+Documentation = "https://epyt-control.readthedocs.io/en/stable/"
 Repository = "https://github.com/WaterFutures/EPyT-Control.git"
 Issues = "https://github.com/WaterFutures/EPyT-Control/issues"
 
