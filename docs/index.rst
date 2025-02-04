@@ -37,6 +37,17 @@ Unique features of EPyT-Control are the following:
     tut.pid_controller
 
 
+.. _tut.examples:
+
+Examples
+========
+.. toctree::
+   :maxdepth: 2
+   :caption: Jupyter notebooks
+
+   examples/basic_usage
+
+
 API Reference
 =============
 .. toctree::
