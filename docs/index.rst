@@ -46,6 +46,8 @@ Examples
    :caption: Jupyter notebooks
 
    examples/basic_usage
+   examples/pid_control
+
 
 
 API Reference
