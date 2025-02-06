@@ -96,6 +96,12 @@ class EpanetMsxControlEnv(RlEnv):
         r = scada_data
         if isinstance(r, tuple):
             r, _ = r
+
+        cur_time = int(r.sensor_readings_time[0])
+        hyd_scada = self._hydraulic_scada_data.extract_time_window(start_time=cur_time,
+                                                                   end_time=cur_time)
+        r.join(hyd_scada)
+
         r = self._get_observation(r)
 
         return r, {"scada_data": scada_data}
@@ -138,6 +144,7 @@ class MultiConfigEpanetMsxControlEnv(EpanetMsxControlEnv):
         self._hyd_exports = [os.path.join(get_temp_folder(),
                                           f"epytcontrol_env_MSX_{uuid.uuid4()}.hyd")
                              for _ in range(len(scenario_configs))]
+        self._hydraulic_scada_datas = [None] * len(scenario_configs)
         self._current_scenario_idx = 0
 
         super().__init__(self._scenario_configs[self._current_scenario_idx],
@@ -149,12 +156,14 @@ class MultiConfigEpanetMsxControlEnv(EpanetMsxControlEnv):
               ) -> tuple[np.ndarray, dict]:
         # Back up current simulation
         self._scenario_sims[self._current_scenario_idx] = self._scenario_sim
+        self._hydraulic_scada_datas[self._current_scenario_idx] = self._hydraulic_scada_data
 
         # Move on to next scenario
         self._current_scenario_idx = self._current_scenario_idx + 1 % len(self._scenario_configs)
         self._scenario_config = self._scenario_configs[self._current_scenario_idx]
         self._scenario_sim = self._scenario_sims[self._current_scenario_idx]
         self._hyd_export = self._hyd_exports[self._current_scenario_idx]
+        self._hydraulic_scada_data = self._hydraulic_scada_datas[self._current_scenario_idx]
 
         return super().reset(seed, options)
 
