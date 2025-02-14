@@ -5,6 +5,7 @@ epyt_control
    epyt_control.actions
    epyt_control.envs
    epyt_control.controllers
+   epyt_control.signal_processing
 
 
 epyt_control.evaluation
