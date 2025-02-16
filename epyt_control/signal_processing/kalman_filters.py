@@ -1,7 +1,7 @@
 """
 This module contains implementations of various Kalman filters.
 """
-from typing import Optional
+from typing import Optional, Callable
 from abc import ABC, abstractmethod
 import numpy as np
 
@@ -314,3 +314,93 @@ class KalmanFilter(KalmanFilterBase):
         self._P = (self._I - np.dot(K, self._H)).dot(self._P)
 
         return np.copy(self._x), np.copy(self._P)
+
+
+class TimeVaryingKalmanFilter(KalmanFilter):
+    """
+    Implementation of the time varying Kalman filter -- i.e. transition matrix,
+    system uncertainty, and measurement uncertainty depend on time.
+
+    Parameters
+    ----------
+    state_dim : `int`
+        Dimensionality of states.
+    obs_dim : `int`
+        Dimensionality of observations.
+    init_state : `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
+        Initial state.
+    measurement_func : `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
+        Measurement function -- i.e. matrix that is converting a state into an observation.
+    state_transition_func : Callable[[int], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_]
+        Function mapping time (integer) to the time dependent state transition function --
+        i.e. matrix moving from a given state to the next state.
+    init_state_uncertainty_cov : `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_, optional
+        Covariance matrix of the initial state uncertainty.
+        If None, the identity matrix will be used.
+
+        The default is None.
+    measurement_uncertainty_cov : Callable[[int], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_], optional
+        Function mapping time (integer) to the time dependent covariance matrix of the
+        measurement/observation uncertainty.
+        If None, the identity matrix will be used in all time steps.
+
+        The default is None.
+    system_uncertainty_cov : Callable[[int], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_], optional
+        Function mapping time (integer) to the time dependent covariance matrix of the
+        system uncertainty.
+        If None, the identity matrix will be used in all time steps.
+
+        The default is None.
+    """
+    def __init__(self, state_dim: int, obs_dim: int, init_state: np.ndarray,
+                 measurement_func:  np.ndarray,
+                 state_transition_func: Callable[[int], np.ndarray],
+                 init_state_uncertainty_cov: Optional[np.ndarray] = None,
+                 measurement_uncertainty_cov: Optional[Callable[[int], np.ndarray]] = None,
+                 system_uncertainty_cov: Optional[Callable[[int], np.ndarray]] = None) -> None:
+        if not callable(state_transition_func):
+            raise TypeError("'state_transition_func' must be a function mapping time (int) " +
+                            "to the time dependent state transition function/matrix")
+
+        self._t = 0
+        self._get_state_transition_func = state_transition_func
+
+        if measurement_uncertainty_cov is None:
+            self._get_measurement_uncertainty_cov = lambda _: np.eye(obs_dim)
+        else:
+            if not callable(measurement_uncertainty_cov):
+                raise TypeError("'measurement_uncertainty_cov' must be a function mapping " +
+                                "time (int) to the time dependent covariance matrix of " +
+                                "the measurement uncertainty.")
+
+            self._get_measurement_uncertainty_cov = measurement_uncertainty_cov
+
+        if system_uncertainty_cov is None:
+            self._get_system_uncertainty_cov = lambda _: np.eye(state_dim)
+        else:
+            if not callable(system_uncertainty_cov):
+                raise TypeError("'system_uncertainty_cov' must be a function mapping time (int) " +
+                                "to the time dependent covariance matrix of " +
+                                "the system uncertainty.")
+
+            self._get_system_uncertainty_cov = system_uncertainty_cov
+
+        super().__init__(state_dim=state_dim, obs_dim=obs_dim, init_state=init_state,
+                         measurement_func=measurement_func(0),
+                         state_transition_func=self._get_state_transition_func(0),
+                         init_state_uncertainty_cov=init_state_uncertainty_cov,
+                         measurement_uncertainty_cov=self._get_measurement_uncertainty_cov(0),
+                         system_uncertainty_cov=self._get_system_uncertainty_cov(0))
+
+    def reset(self) -> None:
+        self._t = 0
+
+        super().reset()
+
+    def step(self, observation: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        self._F = self._get_state_transition_func(self._t)
+        self._R = self._get_measurement_uncertainty_cov(self._t)
+        self._Q = self._get_system_uncertainty_cov(self._t)
+        self._t += 1
+
+        return super().step(observation)
