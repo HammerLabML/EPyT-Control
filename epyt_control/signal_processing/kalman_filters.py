@@ -404,3 +404,236 @@ class TimeVaryingKalmanFilter(KalmanFilter):
         self._t += 1
 
         return super().step(observation)
+
+
+class ExtendedKalmanFilter(KalmanFilterBase):
+    """
+    Class implementing the extended multivariate Kalman filter.
+
+    Parameters
+    ----------
+    state_dim : `int`
+        Dimensionality of states.
+    obs_dim : `int`
+        Dimensionality of observations.
+    init_state : `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
+        Initial state.
+    measurement_func : Callable[[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_]
+        Measurement function -- i.e. a function for mapping a system state to an observation.
+    measurement_func_grad : Callable[[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_]
+        Gradient/Jacobian (w.r.t. a system state) of the measurement function.
+    state_transition_func : Callable[[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_]
+        State transition function -- i.e. a function evolving a system state to the next time step.
+    state_transition_func_grad : Callable[[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_]
+        Gradient/Jacobian (w.r.t. a system state) of the state transition function.
+    init_state_uncertainty_cov : `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_, optional
+        Covariance matrix of the initial state uncertainty.
+        If None, the identity matrix will be used.
+
+        The default is None.
+    measurement_uncertainty_cov : `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_, optional
+        Covariance matrix of the measurement/observation uncertainty.
+        If None, the identity matrix will be used.
+
+        The default is None.
+    system_uncertainty_cov : `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_, optional
+        Covariance matrix of the system uncertainty.
+        If None, the identity matrix will be used.
+
+        The default is None.
+    """
+    def __init__(self, state_dim: int, obs_dim: int, init_state: np.ndarray,
+                 measurement_func: Callable[[np.ndarray], np.ndarray],
+                 measurement_func_grad: Callable[[np.ndarray], np.ndarray],
+                 state_transition_func: Callable[[np.ndarray], np.ndarray],
+                 state_transition_func_grad: Callable[[np.ndarray], np.ndarray],
+                 init_state_uncertainty_cov: Optional[np.ndarray] = None,
+                 measurement_uncertainty_cov: Optional[np.ndarray] = None,
+                 system_uncertainty_cov: Optional[np.ndarray] = None):
+        super().__init__(state_dim=state_dim, obs_dim=obs_dim, init_state=init_state)
+
+        if not callable(measurement_func):
+            raise TypeError("'measurement_func' must be callable -- i.e. mapping a given " +
+                            "system state (numpy.ndarray) to an observation (numpy.ndarray)")
+        if not callable(measurement_func_grad):
+            raise TypeError("'measurement_func_grad' must be callable -- i.e. computing the " +
+                            "gradient/Jacobian ((numpy.ndarray)) of 'measurement_func' " +
+                            "w.r.t. to a given system state")
+        if not callable(state_transition_func):
+            raise TypeError("'state_transition_func' must be callable -- i.e. evolving a given " +
+                            "system state (numpy.ndarray) for one time step")
+        if not callable(state_transition_func_grad):
+            raise TypeError("'state_transition_func_grad' must be callable -- i.e. computing the " +
+                            "gradient/Jacobian (numpy.ndarray) of 'state_transition_func' " +
+                            "w.r.t. to a given system state")
+
+        self._measurement_func = measurement_func
+        self._measurement_func_grad = measurement_func_grad
+        self._state_transition_func = state_transition_func
+        self._state_transition_func_grad = state_transition_func_grad
+
+        self._I = np.eye(state_dim)
+
+        if init_state_uncertainty_cov is None:
+            self._P = self._I
+        else:
+            self._P = init_state_uncertainty_cov
+
+        if measurement_uncertainty_cov is None:
+            self._R = np.eye(obs_dim)
+        else:
+            self._R = measurement_uncertainty_cov
+
+        if system_uncertainty_cov:
+            self._Q = self._I
+        else:
+            self._Q = system_uncertainty_cov
+
+        self._init_state_uncertainty_cov = np.copy(self._P)
+
+    @property
+    def measurement_func(self) -> Callable[[np.ndarray], np.ndarray]:
+        """
+        Returns the measurement function -- i.e. a function for mapping a
+        system state to an observation.
+
+        Returns
+        -------
+        Callable[[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_]
+            Measurement function.
+        """
+        return self._measurement_func
+
+    @property
+    def measurement_func_grad(self) -> Callable[[np.ndarray], np.ndarray]:
+        """
+        Returns the gradient/Jacobian (w.r.t. a system state) of the measurement function.
+
+        Returns
+        -------
+        Callable[[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_]
+            Gradient/Jacobian of the the measurement function.
+        """
+        return self._measurement_func_grad
+
+    @property
+    def state_transition_func(self) -> Callable[[np.ndarray], np.ndarray]:
+        """
+        Returns the state transition function -- i.e. a function evolving a
+        system state to the next time step.
+
+        Returns
+        -------
+        Callable[[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_]
+            State transition function.
+        """
+        return self._state_transition_func
+
+    @property
+    def state_transition_func_grad(self) -> Callable[[np.ndarray], np.ndarray]:
+        """
+        Returns the gradient/Jacobian (w.r.t. a system state) of the state transition function.
+
+        Returns
+        -------
+        Callable[[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_], `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_]
+            Gradient of the state transition function.
+        """
+        return self._state_transition_func_grad
+
+    @property
+    def measurement_uncertainty_cov(self) -> np.ndarray:
+        """
+        Returns the covariance matrix of the measurement/observation uncertainty.
+
+        Returns
+        -------
+        `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
+            Covariance matrix.
+        """
+        return np.copy(self._R)
+
+    @property
+    def system_uncertainty_cov(self) -> np.ndarray:
+        """
+        Returns the covariance matrix of the system uncertainty.
+
+        Returns
+        -------
+        `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
+            Covariance matrix.
+        """
+        return np.copy(self._Q)
+
+    @property
+    def init_state_uncertainty_cov(self) -> np.ndarray:
+        """
+        Returns the covariance matrix of the initial state uncertainty.
+
+        Returns
+        -------
+        `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
+            Covariance matrix.
+        """
+        return np.copy(self._init_state_uncertainty_cov)
+
+    def __eq__(self, other) -> bool:
+        return super().__eq__(other) and \
+            self._measurement_func == other.measurement_func and \
+            self._measurement_func_grad == other.measurement_func_grad and \
+            self._state_transition_func == other.state_transition_func and \
+            self._state_transition_func_grad == other.state_transition_func_grad and \
+            np.all(self._R == other.measurement_uncertainty_cov) and \
+            np.all(self._Q == other.system_uncertainty_cov) and \
+            np.all(self._init_state == other.init_state) and \
+            np.all(self._init_state_uncertainty_cov == other.init_state_uncertainty_cov)
+
+    def __str__(self) -> str:
+        return super().__str__() +\
+            f" init_state_uncertainty_cov: {self._init_state_uncertainty_cov} " +\
+            f"measurement_func: {self._measurement_func} " +\
+            f"measurement_func_grad: {self._measurement_func_grad} " +\
+            f"state_transition_func: {self._state_transition_func} " +\
+            f"state_transition_func_grad: {self._state_transition_func_grad} " +\
+            f"measurement_uncertainty_cov: {self._R} system_uncertainty_cov: {self._Q}"
+
+    def reset(self) -> None:
+        super().reset()
+
+        self._P = np.copy(self._init_state_uncertainty_cov)
+
+    def step(self, observation: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Predicts the current state (incl. it's uncertainty) based on a given current observation.
+        Also, updates all other internal states of the Kalman filter.
+
+        Parameters
+        ----------
+        observation : `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
+            Current observation.
+
+        Returns
+        -------
+        tuple[`numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_, `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_]
+            Tuple of predicted system state and uncertainty covariance matrix.
+        """
+        if not isinstance(observation, np.ndarray):
+            raise TypeError("'observation' must be an instance of 'numpy.ndarray' " +
+                            f"but not of '{type(observation)}'")
+        if observation.shape != (self._obs_dim,):
+            raise ValueError("'observation' must be of shap (obs_dim,) -- " +
+                             f"i.e. {(self._obs_dim,)}. But found {observation.shape}")
+        # Predict
+        F = self._state_transition_func_grad(self._x)
+        self._x = self._state_transition_func(self._x)
+        self._P = np.dot(F, self._P).dot(F.T) + self._Q
+
+        # Update
+        H = self._measurement_func_grad(self._x)
+        y = observation - self._measurement_func(self._x)
+        S = np.dot(H, self._P).dot(H.T) + self._R
+        K = np.dot(self._P, H.T).dot(np.linalg.inv(S))
+        self._x = self._x + np.dot(K, y)
+        self._P = (self._I - np.dot(K, H)).dot(self._P)
+
+        return np.copy(self._x), np.copy(self._P)
