@@ -6,7 +6,7 @@ import numpy as np
 from epyt_flow.simulation import ScadaData
 from gymnasium import Wrapper
 
-from .envs import RlEnv
+from ..envs import RlEnv
 
 
 def evaluate_policy(env: Union[RlEnv, Wrapper], policy: Callable[[np.ndarray], np.ndarray],

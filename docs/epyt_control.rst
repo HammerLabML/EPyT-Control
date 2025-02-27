@@ -6,11 +6,4 @@ epyt_control
    epyt_control.envs
    epyt_control.controllers
    epyt_control.signal_processing
-
-
-epyt_control.evaluation
------------------------
-
-.. automodule:: epyt_control.evaluation
-   :members:
-   :show-inheritance:
+   epyt_control.evaluation
