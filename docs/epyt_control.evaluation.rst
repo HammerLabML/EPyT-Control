@@ -9,3 +9,10 @@ epyt_control.evaluation.evaluation
    :members:
    :show-inheritance:
 
+
+epyt_control.evaluation.metrics
+-------------------------------
+
+.. automodule:: epyt_control.evaluation.metrics
+   :members:
+   :show-inheritance:
