@@ -13,7 +13,7 @@ from gymnasium.spaces import Dict
 from gymnasium.spaces.utils import flatten_space
 from gymnasium import Env
 
-from ..actions.quality_actions import SpeciesInjectionAction
+from .actions.quality_actions import SpeciesInjectionAction
 from .rl_env import RlEnv
 
 

@@ -11,7 +11,7 @@ from epyt_flow.simulation import ScenarioSimulator, ToolkitConstants, ModelUncer
     ScenarioConfig, ScadaData, SensorConfig
 from epyt_flow.uncertainty import RelativeUniformUncertainty, AbsoluteGaussianUncertainty
 from epyt_control.envs import HydraulicControlEnv
-from epyt_control.actions import ChemicalInjectionAction
+from epyt_control.envs.actions import ChemicalInjectionAction
 from stable_baselines3 import PPO
 from gymnasium.wrappers import NormalizeObservation
 
@@ -40,10 +40,7 @@ def create_scenario() -> ScenarioConfig:
         sim.set_flow_sensors(sim.sensor_config.links)
 
         # Specify uncertainties -- similar to the one already implemented in LeakDB
-        my_uncertainties = {"global_pipe_length_uncertainty": RelativeUniformUncertainty(low=0, high=0.25),
-                            "global_pipe_roughness_uncertainty": RelativeUniformUncertainty(low=0, high=0.25),
-                            "global_base_demand_uncertainty": RelativeUniformUncertainty(low=0, high=0.25),
-                            "global_demand_pattern_uncertainty": AbsoluteGaussianUncertainty(mean=0, scale=.2)}
+        my_uncertainties = {"global_demand_pattern_uncertainty": AbsoluteGaussianUncertainty(mean=0, scale=.2)}
         sim.set_model_uncertainty(ModelUncertainty(**my_uncertainties))
 
         sim.save_to_epanet_file(os.path.join(get_temp_folder(), f"SimpleChlorineInjectionEnv-{time.time()}.inp"))

@@ -14,7 +14,7 @@ from gymnasium import Env
 from gymnasium.spaces import Space, Box, Discrete, Tuple
 from gymnasium.spaces.utils import flatten_space
 
-from ..actions import Action
+from .actions import Action
 
 
 class RlEnv(ScenarioControlEnv, Env):

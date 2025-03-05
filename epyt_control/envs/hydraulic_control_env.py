@@ -9,9 +9,9 @@ from gymnasium.spaces import Dict
 from gymnasium.spaces.utils import flatten_space
 
 from .rl_env import RlEnv
-from ..actions.pump_speed_actions import PumpSpeedAction
-from ..actions.quality_actions import ChemicalInjectionAction
-from ..actions.actuator_state_actions import PumpStateAction, ValveStateAction
+from .actions.pump_speed_actions import PumpSpeedAction
+from .actions.quality_actions import ChemicalInjectionAction
+from .actions.actuator_state_actions import PumpStateAction, ValveStateAction
 
 
 class EpanetControlEnv(RlEnv):

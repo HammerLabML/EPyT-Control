@@ -9,7 +9,7 @@ from epyt_flow.uncertainty import RelativeUniformUncertainty, AbsoluteGaussianUn
 from epyt_flow.utils import to_seconds, plot_timeseries_data
 
 from epyt_control.envs import HydraulicControlEnv
-from epyt_control.actions import ChemicalInjectionAction
+from epyt_control.envs.actions import ChemicalInjectionAction
 from epyt_control.controllers import PidController
 
 

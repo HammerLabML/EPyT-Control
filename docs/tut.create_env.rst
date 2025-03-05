@@ -69,25 +69,25 @@ please see the following tables for an overview of all supported types of action
 
 Possible actions in an EPANET scenario (i.e. an :class:`~epyt_control.envs.hydraulic_control_env.HydraulicControlEnv` instance):
 
-+------------------------------------------------------------------------+-------------------------------+
-| Implementation                                                         | Description                   |
-+========================================================================+===============================+
-| :class:`~epyt_control.actions.actuator_state_actions.ValveStateAction` | Opening/Closing a valve.      |
-+------------------------------------------------------------------------+-------------------------------+
-| :class:`~epyt_control.actions.actuator_state_actions.PumpStateAction`  | Starting/Stopping a pump.     |
-+------------------------------------------------------------------------+-------------------------------+
-| :class:`~epyt_control.actions.pump_speed_actions.PumpSpeedAction`      | Setting the speed of a pump.  |
-+------------------------------------------------------------------------+-------------------------------+
-| :class:`~epyt_control.actions.quality_actions.ChemicalInjectionAction` | Injecting a chemical.         |
-+------------------------------------------------------------------------+-------------------------------+
++-----------------------------------------------------------------------------+-------------------------------+
+| Implementation                                                              | Description                   |
++=============================================================================+===============================+
+| :class:`~epyt_control.envs.actions.actuator_state_actions.ValveStateAction` | Opening/Closing a valve.      |
++-----------------------------------------------------------------------------+-------------------------------+
+| :class:`~epyt_control.envs.actions.actuator_state_actions.PumpStateAction`  | Starting/Stopping a pump.     |
++-----------------------------------------------------------------------------+-------------------------------+
+| :class:`~epyt_control.envs.actions.pump_speed_actions.PumpSpeedAction`      | Setting the speed of a pump.  |
++-----------------------------------------------------------------------------+-------------------------------+
+| :class:`~epyt_control.envs.actions.quality_actions.ChemicalInjectionAction` | Injecting a chemical.         |
++-----------------------------------------------------------------------------+-------------------------------+
 
 Possible actions in an EPANET-MSX scenario (i.e. an :class:`~epyt_control.envs.advanced_quality_control_env.AdvancedQualityControlEnv` instance):
 
-+-----------------------------------------------------------------------+--------------------------------+
-| Implementation                                                        | Description                    |
-+=======================================================================+================================+
-| :class:`~epyt_control.actions.quality_actions.SpeciesInjectionAction` | Injecting a specific species.  |
-+-----------------------------------------------------------------------+--------------------------------+
++----------------------------------------------------------------------------+--------------------------------+
+| Implementation                                                             | Description                    |
++============================================================================+================================+
+| :class:`~epyt_control.envs.actions.quality_actions.SpeciesInjectionAction` | Injecting a specific species.  |
++----------------------------------------------------------------------------+--------------------------------+
 
 
 Multi-Config Environments

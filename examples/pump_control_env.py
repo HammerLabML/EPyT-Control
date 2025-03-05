@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from epyt_flow.simulation import ScenarioSimulator, ScenarioConfig, ScadaData
 from epyt_control.envs import HydraulicControlEnv
-from epyt_control.actions import PumpSpeedAction
+from epyt_control.envs.actions import PumpSpeedAction
 from stable_baselines3 import SAC
 from gymnasium.wrappers import RescaleAction, NormalizeObservation
 

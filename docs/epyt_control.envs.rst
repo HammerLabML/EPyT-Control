@@ -2,6 +2,10 @@ epyt_control.envs
 =================
 
 
+.. toctree::
+   epyt_control.envs.actions
+
+
 epyt_control.envs.rl_env
 ------------------------
 
