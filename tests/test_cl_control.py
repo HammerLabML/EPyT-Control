@@ -10,7 +10,7 @@ from epyt_flow.simulation import ScenarioSimulator, ToolkitConstants, ModelUncer
 from epyt_flow.utils import to_seconds
 from epyt_flow.uncertainty import RelativeUniformUncertainty, AbsoluteGaussianUncertainty
 from epyt_control.envs import HydraulicControlEnv, MultiConfigHydraulicControlEnv
-from epyt_control.actions import ChemicalInjectionAction
+from epyt_control.envs.actions import ChemicalInjectionAction
 from gymnasium.utils.env_checker import check_env
 
 from .utils import get_temp_folder

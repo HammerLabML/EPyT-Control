@@ -12,7 +12,7 @@ from epyt_flow.simulation.events import SpeciesInjectionEvent
 from epyt_flow.uncertainty import RelativeUniformUncertainty, AbsoluteGaussianUncertainty
 from epyt_flow.utils import to_seconds
 from epyt_control.envs import AdvancedQualityControlEnv, MultiConfigAdvancedQualityControlEnv
-from epyt_control.actions import SpeciesInjectionAction
+from epyt_control.envs.actions import SpeciesInjectionAction
 from gymnasium.utils.env_checker import check_env
 
 from .utils import get_temp_folder

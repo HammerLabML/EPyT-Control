@@ -7,7 +7,7 @@ import pandas as pd
 from epyt_flow.simulation import ScenarioSimulator, ScenarioConfig, ScadaData
 from epyt_flow.utils import to_seconds
 from epyt_control.envs import HydraulicControlEnv, MultiConfigHydraulicControlEnv
-from epyt_control.actions import PumpSpeedAction
+from epyt_control.envs.actions import PumpSpeedAction
 from gymnasium.utils.env_checker import check_env
 
 
