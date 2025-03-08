@@ -47,6 +47,7 @@ Examples
 
    examples/basic_usage
    examples/pid_control
+   examples/event_detection
 
 
 
