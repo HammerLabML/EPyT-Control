@@ -7,7 +7,7 @@ PID Controller
 EPyT-Control also provides an implementation of a Proportional-Integral-Derivative (PID) controller
 from classic control theory.
 The PID controller is implemented in the
-:class:`~epyt_control.controllers.pid_controller.PidController` class.
+:class:`~epyt_control.controllers.pid.PidController` class.
 
 Since a PID controller can only output a single (i.e. one dimensional) control signal
 for a single (i.e. one dimensional) control variable (also referred to as system state
