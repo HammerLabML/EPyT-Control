@@ -6,6 +6,7 @@ EPANET-MSX scenario (no control over pumps, valves, etc.).
 import os
 import uuid
 from typing import Optional, Any
+import warnings
 import numpy as np
 from epyt_flow.simulation import ScenarioConfig, ScenarioSimulator
 from epyt_flow.utils import get_temp_folder
@@ -138,6 +139,11 @@ class MultiConfigEpanetMsxControlEnv(EpanetMsxControlEnv):
                for scenario_config in scenario_configs):
             raise TypeError("All items in 'scenario_config' must be instances of " +
                             "epyt_flow.simulation.ScenarioConfig")
+
+        if len(scenario_configs) > 10:
+            warnings.warn("You are using many scenarios. You might face issues w.r.t. " +
+                          "memory consumption as well as with the maximum number of open files " +
+                          "allowed by the operating system.", UserWarning)
 
         self._scenario_configs = scenario_configs
         self._scenario_sims = [None] * len(scenario_configs)
