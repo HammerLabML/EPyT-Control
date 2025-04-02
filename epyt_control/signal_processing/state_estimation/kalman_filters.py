@@ -484,7 +484,7 @@ class ExtendedKalmanFilter(KalmanFilterBase):
         else:
             self._R = measurement_uncertainty_cov
 
-        if system_uncertainty_cov:
+        if system_uncertainty_cov is None:
             self._Q = self._I
         else:
             self._Q = system_uncertainty_cov
@@ -621,7 +621,7 @@ class ExtendedKalmanFilter(KalmanFilterBase):
             raise TypeError("'observation' must be an instance of 'numpy.ndarray' " +
                             f"but not of '{type(observation)}'")
         if observation.shape != (self._obs_dim,):
-            raise ValueError("'observation' must be of shap (obs_dim,) -- " +
+            raise ValueError("'observation' must be of shape (obs_dim,) -- " +
                              f"i.e. {(self._obs_dim,)}. But found {observation.shape}")
         # Predict
         F = self._state_transition_func_grad(self._x)
