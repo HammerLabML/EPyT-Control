@@ -637,3 +637,77 @@ class ExtendedKalmanFilter(KalmanFilterBase):
         self._P = (self._I - np.dot(K, H)).dot(self._P)
 
         return np.copy(self._x), np.copy(self._P)
+
+
+class TimeVaryingExtendedKalmanFilter(ExtendedKalmanFilter):
+    """
+    Implementing the timevarying extended multivariate Kalman filter -- i.e.
+    state transition and measurement functions may depend on time.
+
+    Parameters
+    ----------
+    state_dim : `int`
+        Dimensionality of states.
+    obs_dim : `int`
+        Dimensionality of observations.
+    init_state : `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
+        Initial state.
+    get_state_transition_func : `Callable[[int], Callable[[numpy.ndarray], numpy.ndarray]]`
+        A function that maps time to the curresponding state transition function
+        (a function evolving a given system state to the next time step).
+    get_state_transition_func_grad : `Callable[[int], Callable[[numpy.ndarray], numpy.ndarray]]`
+        A function that maps time to the curresponding function for computing the gradient/Jacobian
+        (w.r.t. a system state) of the state transition function.
+    get_measurement_func_grad : `Callable[[int], Callable[[numpy.ndarray], numpy.ndarray]]`
+        A function that maps time to the curresponding function for computing the gradient/Jacobian
+        (w.r.t. a system state) of the measurement function.
+    get_measurement_func : `Callable[[int], Callable[[numpy.ndarray], numpy.ndarray]]`
+        A function that maps time to the curresponding measurement function
+        (a function for mapping a system state to an observation).
+    """
+    def __init__(self, state_dim: int, obs_dim: int, init_state: np.ndarray,
+                 get_state_transition_func: Callable[[int], Callable[[np.ndarray], np.ndarray]],
+                 get_state_transition_func_grad: Callable[[int], Callable[[np.ndarray], np.ndarray]],
+                 get_measurement_func_grad: Callable[[int], Callable[[np.ndarray], np.ndarray]],
+                 get_measurement_func: Callable[[int], Callable[[np.ndarray], np.ndarray]], **kwds):
+        if not callable(get_state_transition_func):
+            raise TypeError("'get_state_transition_func' must be callable -- i.e. mapping " +
+                            "time to the curresponding state transition function")
+        if not callable(get_state_transition_func_grad):
+            raise TypeError("'get_state_transition_func_grad' must be callable -- i.e. mapping " +
+                            "time to the curresponding function for computing the " +
+                            "gradient/Jacobian of the state trasition function")
+        if not callable(get_measurement_func_grad):
+            raise TypeError("'get_measurement_func_grad' must be callable -- i.e. mapping " +
+                            "time to the curresponding function for computing the " +
+                            "gradient/Jacobian of the measurement function")
+        if not callable(get_measurement_func):
+            raise TypeError("'get_measurement_func' must be callable -- i.e. mapping " +
+                            "time to the curresponding measurement function")
+
+        self._get_state_transition_func = get_state_transition_func
+        self._get_state_transition_func_grad = get_state_transition_func_grad
+        self._get_measurement_func_grad = get_measurement_func_grad
+        self._get_measurement_func = get_measurement_func
+
+        self._t = 0
+
+        super().__init__(state_dim=state_dim, obs_dim=obs_dim, init_state=init_state,
+                         state_transition_func=self._get_state_transition_func(self._t),
+                         state_transition_func_grad=self._get_state_transition_func_grad(self._t),
+                         measurement_func=self._get_measurement_func(self._t),
+                         measurement_func_grad=self._get_measurement_func_grad(self._t), **kwds)
+
+    def reset(self) -> None:
+        self._t = 0
+
+        super().reset()
+
+    def step(self, observation: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        self._state_transition_func_grad = self._get_state_transition_func_grad(self._t)
+        self._state_transition_func = self._get_state_transition_func(self._t)
+        self._measurement_func_grad = self._get_measurement_func_grad(self._t)
+        self._measurement_func = self._get_measurement_func(self._t)
+        self._t += 1
+
+        return super().step(observation)
