@@ -34,7 +34,7 @@ class KalmanFilterBase(ABC):
             raise TypeError("'init_state' must be an instance of 'numpy.ndarray' " +
                             f"but not of '{type(init_state)}'")
         if init_state.shape != (state_dim,):
-            raise ValueError("'init_state' must be of shap (state_dim,) -- " +
+            raise ValueError("'init_state' must be of shape (state_dim,) -- " +
                              f"i.e. {(state_dim,)}. But found {init_state.shape}")
 
         self._state_dim = state_dim
