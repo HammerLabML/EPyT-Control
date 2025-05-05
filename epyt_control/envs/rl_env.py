@@ -113,7 +113,7 @@ class RlEnv(ScenarioControlEnv, Env):
     def _next_sim_itr(self) -> Union[tuple[ScadaData, bool], ScadaData]:
         try:
             next(self._sim_generator)
-            scada_data = self._sim_generator.send(False)
+            scada_data, terminated = self._sim_generator.send(False)
 
             if self._scenario_sim.f_msx_in is not None:
                 cur_time = int(scada_data.sensor_readings_time[0])
@@ -124,7 +124,7 @@ class RlEnv(ScenarioControlEnv, Env):
             if self.autoreset is True:
                 return scada_data
             else:
-                return scada_data, False
+                return scada_data, terminated
         except StopIteration:
             if self.autoreset is True:
                 _, info = self.reset()
@@ -245,7 +245,7 @@ class RlEnv(ScenarioControlEnv, Env):
         if isinstance(current_scada_data, tuple):
             current_scada_data, _ = current_scada_data
 
-        if terminated is False:
+        if current_scada_data is not None:
             obs = self._get_observation(current_scada_data)
 
             # Calculate reward
