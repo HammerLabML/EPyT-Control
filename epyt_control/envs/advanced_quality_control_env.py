@@ -28,10 +28,14 @@ class EpanetMsxControlEnv(RlEnv):
         Configuration of the scenario.
     action_space : list[:class:`~epyt_control.actions.quality_actions.SpeciesInjectionAction`]
         The action spaces (i.e. list of species injections) that have to be controlled by the agent.
-    rerun_hydraulics_when_reset : `bool`
+    rerun_hydraulics_when_reset : `bool`, optional
         If True, the hydraulic simulation is going to be re-run when the environment is reset,
         otherwise the hydraulics from the initial run are re-used and the scenario will
         also not be reloaded -- i.e. reload_scenario_when_reset=False.
+
+        The default is True.
+
+        Note that this argument overrides any values of 'hyd_file_in' and 'hyd_scada_in'.
     """
     def __init__(self, scenario_config: ScenarioConfig,
                  action_space: list[SpeciesInjectionAction],
@@ -77,9 +81,13 @@ class EpanetMsxControlEnv(RlEnv):
                 self._scenario_sim = ScenarioSimulator(
                     scenario_config=self._scenario_config)
 
-                # Run hydraulic simulation first
-                sim = self._scenario_sim.run_hydraulic_simulation
-                self._hydraulic_scada_data = sim(hyd_export=self._hyd_export)
+                # Run hydraulic simulation first if necessary
+                if self._hyd_file_in is not None:
+                    self._hyd_export = self._hyd_file_in
+                    self._hydraulic_scada_data = self._hyd_scada_in
+                else:
+                    sim = self._scenario_sim.run_hydraulic_simulation
+                    self._hydraulic_scada_data = sim(hyd_export=self._hyd_export)
             else:
                 # Abort current simulation if any is runing
                 try:
@@ -123,7 +131,7 @@ class MultiConfigEpanetMsxControlEnv(EpanetMsxControlEnv):
         Configuration of the scenario.
     action_space : list[:class:`~epyt_control.actions.quality_actions.SpeciesInjectionAction`]
         The action spaces (i.e. list of species injections) that have to be controlled by the agent.
-    rerun_hydraulics_when_reset : `bool`
+    rerun_hydraulics_when_reset : `bool`, optional
         If True, the hydraulic simulation is going to be re-run when the environment is reset,
         otherwise the hydraulics from the initial run are re-used and the scenario will
         also not be reloaded -- i.e. reload_scenario_when_reset=False.

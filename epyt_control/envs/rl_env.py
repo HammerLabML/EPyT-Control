@@ -34,9 +34,17 @@ class RlEnv(ScenarioControlEnv, Env):
         If False, only the simulation is reset.
 
         The default is True.
+    hyd_file_in : `str`
+        Path to an EPANET .hyd file containing the simulated hydraulics.
+        Can only be used in conjunction with 'hyd_scada_in' in the case of an EPANET-MSX scenario.
+        If set, hydraulics will not be simulated but taken from the specified file.
+    hyd_scada_in : `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_
+        ScadaData instance containing the simulated hydraulics -- must match the hydraulics
+        from 'hyd_file_in'. Can only be used in conjunction with 'hyd_file_in'.
     """
     def __init__(self, scenario_config: ScenarioConfig, gym_action_space: Space,
                  action_space: list[Action], reload_scenario_when_reset: bool = True,
+                 hyd_file_in: str = None, hyd_scada_in: ScadaData = None,
                  **kwds):
         if not isinstance(gym_action_space, Space):
             raise TypeError("'gym_action_space' must be an instance of 'gymnasium.spaces.Space' " +
@@ -51,6 +59,22 @@ class RlEnv(ScenarioControlEnv, Env):
         if not isinstance(reload_scenario_when_reset, bool):
             raise TypeError("'reload_scenario_when_reset' must be an instance of 'bool' " +
                             f"but not of '{type(reload_scenario_when_reset)}'")
+
+        if (hyd_file_in is not None and hyd_scada_in is None) or \
+                (hyd_file_in is None and hyd_scada_in is not None):
+            raise ValueError("")
+        if hyd_file_in is not None:
+            if not isinstance(hyd_file_in, str):
+                raise TypeError("'hyd_file_in' must be an instance of 'str' " +
+                                f"but not of '{type(hyd_file_in)}'")
+        if hyd_scada_in is not None:
+            if not isinstance(hyd_scada_in, ScadaData):
+                raise TypeError("'hyd_scada_in' must be an instance of " +
+                                "'epyt_flow.simulation.ScadaData' but not of " +
+                                f"'{type(hyd_scada_in)}'")
+
+        self._hyd_file_in = hyd_file_in
+        self._hyd_scada_in = hyd_scada_in
 
         super().__init__(scenario_config=scenario_config, **kwds)
 
@@ -173,9 +197,13 @@ class RlEnv(ScenarioControlEnv, Env):
                     pass
 
             if self._scenario_sim.f_msx_in is not None:
-                hyd_export = os.path.join(get_temp_folder(), f"epytflow_env_MSX_{uuid.uuid4()}.hyd")
-                sim = self._scenario_sim.run_hydraulic_simulation
-                self._hydraulic_scada_data = sim(hyd_export=hyd_export)
+                if self._hyd_file_in is not None:
+                    hyd_export = self._hyd_file_in
+                    self._hydraulic_scada_data = self._hyd_scada_in
+                else:
+                    hyd_export = os.path.join(get_temp_folder(), f"epytflow_env_MSX_{uuid.uuid4()}.hyd")
+                    sim = self._scenario_sim.run_hydraulic_simulation
+                    self._hydraulic_scada_data = sim(hyd_export=hyd_export)
 
                 gen = self._scenario_sim.run_advanced_quality_simulation_as_generator
                 self._sim_generator = gen(hyd_export, support_abort=True)
