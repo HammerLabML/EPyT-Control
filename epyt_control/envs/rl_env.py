@@ -34,13 +34,17 @@ class RlEnv(ScenarioControlEnv, Env):
         If False, only the simulation is reset.
 
         The default is True.
-    hyd_file_in : `str`
+    hyd_file_in : `str`, optional
         Path to an EPANET .hyd file containing the simulated hydraulics.
         Can only be used in conjunction with 'hyd_scada_in' in the case of an EPANET-MSX scenario.
         If set, hydraulics will not be simulated but taken from the specified file.
-    hyd_scada_in : `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_
+
+        The default is None.
+    hyd_scada_in : `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_, optional
         ScadaData instance containing the simulated hydraulics -- must match the hydraulics
         from 'hyd_file_in'. Can only be used in conjunction with 'hyd_file_in'.
+
+        The default is None.
     """
     def __init__(self, scenario_config: ScenarioConfig, gym_action_space: Space,
                  action_space: list[Action], reload_scenario_when_reset: bool = True,
