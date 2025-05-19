@@ -142,20 +142,32 @@ class MultiConfigEpanetMsxControlEnv(EpanetMsxControlEnv):
     handle multiple scenario configurations -- those scenarios are utilized in a round-robin
     scheduling scheme (i.e. autorest=True).
 
+    Note that all scenarios must share the same action and observation space.
+
     Parameters
     ----------
     scenario_configs : list[`epyt_flow.simulation.ScenarioConfig <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.html#epyt_flow.simulation.scenario_config.ScenarioConfig>`_]
-        Configuration of the scenario.
+        Configuration of the scenario. Note that all sceanrios must share the same action and
+        observation space.
     action_space : list[:class:`~epyt_control.actions.quality_actions.SpeciesInjectionAction`]
         The action spaces (i.e. list of species injections) that have to be controlled by the agent.
+        Must be the same for all scenarios specified in 'scenario_configs'.
     rerun_hydraulics_when_reset : `bool`, optional
         If True, the hydraulic simulation is going to be re-run when the environment is reset,
         otherwise the hydraulics from the initial run are re-used and the scenario will
         also not be reloaded -- i.e. reload_scenario_when_reset=False.
+    precomputed_hydraulics : list[tuple[str, `epyt_flow.simulation.ScadaData <https://epyt-flow.readthedocs.io/en/stable/epyt_flow.simulation.scada.html#epyt_flow.simulation.scada.scada_data.ScadaData>`_]], optional
+        Pre-computed hydraulics -- i.e., for each scenario in 'scenario_configs', a tuple of a
+        path to an EPANET generatd .hyd file and a ScadaData instance -- that are used instead
+        of re-running the hydraulic simulation.
+        If used, 'rerun_hydraulics_when_reset' must be False.
+
+        The default is None.
     """
     def __init__(self, scenario_configs: list[ScenarioConfig],
                  action_space: list[SpeciesInjectionAction],
-                 rerun_hydraulics_when_reset: bool = True, **kwds):
+                 rerun_hydraulics_when_reset: bool = True,
+                 precomputed_hydraulics: list[tuple[str, ScadaData]] = None, **kwds):
         if not isinstance(scenario_configs, list):
             raise TypeError("'scenario_configs' must be an instance of " +
                             "epyt_flow.simulation.ScenarioConfig but " +
@@ -177,11 +189,40 @@ class MultiConfigEpanetMsxControlEnv(EpanetMsxControlEnv):
                              for _ in range(len(scenario_configs))]
         self._hydraulic_scada_datas = [None] * len(scenario_configs)
         self._current_scenario_idx = 0
+        self._use_precomputed_hydraulics = False
+
+        if precomputed_hydraulics is not None:
+            def __raise_type_error():
+                raise TypeError("'precomputed_hydraulics' must be an instance of " +
+                                "'list[tuple[str, epyt_flow.simulation.ScadaData]]'")
+
+            if not isinstance(precomputed_hydraulics, list):
+                __raise_type_error()
+            if any(not isinstance(hyd, tuple) for hyd in precomputed_hydraulics):
+                __raise_type_error()
+            if any(not isinstance(hyd[0], str) or not isinstance(hyd[1], ScadaData)
+                   for hyd in precomputed_hydraulics):
+                __raise_type_error()
+            if len(precomputed_hydraulics) != len(scenario_configs):
+                raise ValueError("Length of 'precomputed_hydraulics' must be equal to the " +
+                                 "number of scenarios in 'scenario_configs'")
+            if rerun_hydraulics_when_reset is True:
+                raise ValueError("'rerun_hydraulics_when_reset' msut be False if " +
+                                 "pre-computed hydraulics are used")
+
+            self._hyd_exports = []
+            self._hydraulic_scada_datas = []
+            for hyd_file_in, scada_hyd_in in precomputed_hydraulics:
+                self._hyd_exports.append(hyd_file_in)
+                self._hydraulic_scada_datas.append(scada_hyd_in)
+
+            self._use_precomputed_hydraulics = True
 
         super().__init__(self._scenario_configs[self._current_scenario_idx],
                          action_space, rerun_hydraulics_when_reset,
                          autoreset=True, **kwds)
         self._hyd_export = self._hyd_exports[self._current_scenario_idx]
+        self._hydraulic_scada_data = self._hydraulic_scada_datas[self._current_scenario_idx]
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None
               ) -> tuple[np.ndarray, dict]:
