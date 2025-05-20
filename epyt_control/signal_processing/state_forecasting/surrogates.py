@@ -169,7 +169,7 @@ class HydraulicStateTransitionSurrogate(StateTransitionSurrogate):
         Information about the topology of the WDN.
     n_actuators : `int`
         Dimensionality of the control signal.
-    state_transition_model : :class:`~epyt_control.signal_procesing.state_forecasting.surrogates.StateTransitionModel`
+    state_transition_model : :class:`StateTransitionModel`
         State transition model which is used as an approximation of the true state transition function.
         Usually, a neural network is used.
     """
@@ -247,7 +247,7 @@ class WaterQualityStateTransitionSurrogate(StateTransitionSurrogate):
         Information about the topology of the WDN.
     n_actuators : `int`
         Dimensionality of the control signal.
-    state_transition_model : :class:`~epyt_control.signal_procesing.state_forecasting.surrogates.StateTransitionModel`
+    state_transition_model : :class:`StateTransitionModel`
         State transition model which is used as an approximation of the true state transition function.
         Usually, a neural network is used.
     """
