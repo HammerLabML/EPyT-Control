@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('../'))
 
 project = 'EPyT-Control'
 copyright = 'EPyT-Control Developers'
-author = 'André Artelt'
+author = 'André Artelt et al.'
 
 
 # -- General configuration ---------------------------------------------------
