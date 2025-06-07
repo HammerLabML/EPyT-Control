@@ -130,7 +130,7 @@ If you use this software, please cite it as follows:
         year = {2025},
         publisher = {GitHub},
         journal = {GitHub repository},
-        howpublished = {\url{https://github.com/WaterFutures/EPyT-Control}}
+        howpublished = {https://github.com/WaterFutures/EPyT-Control}
     }
 ```
 
