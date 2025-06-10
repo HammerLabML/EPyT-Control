@@ -45,11 +45,17 @@ class RlEnv(ScenarioControlEnv, Env):
         from 'hyd_file_in'. Can only be used in conjunction with 'hyd_file_in'.
 
         The default is None.
+    frozen_sensor_config : `bool`, optional
+        If True, only the sensor readings from the observation space will be stored when running the
+        simulation -- note that this implies that the reward function can only use the observations.
+        This can lead to a significant speed-up of the simulation.
+
+        The default is False.
     """
     def __init__(self, scenario_config: ScenarioConfig, gym_action_space: Space,
                  action_space: list[Action], reload_scenario_when_reset: bool = True,
                  hyd_file_in: str = None, hyd_scada_in: ScadaData = None,
-                 **kwds):
+                 frozen_sensor_config: bool = False, **kwds):
         if not isinstance(gym_action_space, Space):
             raise TypeError("'gym_action_space' must be an instance of 'gymnasium.spaces.Space' " +
                             f"but not of '{type(gym_action_space)}'")
@@ -63,6 +69,9 @@ class RlEnv(ScenarioControlEnv, Env):
         if not isinstance(reload_scenario_when_reset, bool):
             raise TypeError("'reload_scenario_when_reset' must be an instance of 'bool' " +
                             f"but not of '{type(reload_scenario_when_reset)}'")
+        if not isinstance(frozen_sensor_config, bool):
+            raise TypeError("'frozen_sensor_config' must be an instance of 'bool' " +
+                            f"but not of '{type(frozen_sensor_config)}'")
 
         if (hyd_file_in is not None and hyd_scada_in is None) or \
                 (hyd_file_in is None and hyd_scada_in is not None):
@@ -86,6 +95,7 @@ class RlEnv(ScenarioControlEnv, Env):
         self._action_space = action_space
         self._gym_action_space = gym_action_space
         self._reload_scenario_when_reset = reload_scenario_when_reset
+        self._frozen_sensor_config = frozen_sensor_config
 
     def _get_observation_space(self) -> Space:
         obs_space = []
@@ -205,15 +215,19 @@ class RlEnv(ScenarioControlEnv, Env):
                     hyd_export = self._hyd_file_in
                     self._hydraulic_scada_data = self._hyd_scada_in
                 else:
-                    hyd_export = os.path.join(get_temp_folder(), f"epytflow_env_MSX_{uuid.uuid4()}.hyd")
+                    hyd_export = os.path.join(get_temp_folder(),
+                                              f"epytflow_env_MSX_{uuid.uuid4()}.hyd")
                     sim = self._scenario_sim.run_hydraulic_simulation
-                    self._hydraulic_scada_data = sim(hyd_export=hyd_export)
+                    self._hydraulic_scada_data = sim(hyd_export=hyd_export,
+                                                     frozen_sensor_config=self._frozen_sensor_config)
 
                 gen = self._scenario_sim.run_advanced_quality_simulation_as_generator
-                self._sim_generator = gen(hyd_export, support_abort=True)
+                self._sim_generator = gen(hyd_export, support_abort=True,
+                                          frozen_sensor_config=self._frozen_sensor_config)
             else:
                 gen = self._scenario_sim.run_hydraulic_simulation_as_generator
-                self._sim_generator = gen(support_abort=True)
+                self._sim_generator = gen(support_abort=True,
+                                          frozen_sensor_config=self._frozen_sensor_config)
 
             scada_data = self._next_sim_itr()
 
